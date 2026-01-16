@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, obsidianmd/no-static-styles-assignment, no-restricted-globals, id-length */
 /**
  * Global test setup and configuration
  * Runs before all tests to configure the test environment
@@ -292,9 +293,9 @@ beforeEach(() => {
       LOADING: 1,
       DONE: 2,
       
-      readAsDataURL: vi.fn(function(this: any, blob: Blob) {
+      readAsDataURL: vi.fn(function(this: any, _blob: Blob) {
         // Simulate async read
-        Promise.resolve().then(() => {
+        void Promise.resolve().then(() => {
           this.result = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
           this.readyState = 2; // DONE
           const event = { target: this };
@@ -303,8 +304,8 @@ beforeEach(() => {
         });
       }),
       
-      readAsArrayBuffer: vi.fn(function(this: any, blob: Blob) {
-        Promise.resolve().then(() => {
+      readAsArrayBuffer: vi.fn(function(this: any, _blob: Blob) {
+        void Promise.resolve().then(() => {
           // Create a simple ArrayBuffer
           const buffer = new ArrayBuffer(8);
           const view = new Uint8Array(buffer);
@@ -320,8 +321,8 @@ beforeEach(() => {
         });
       }),
       
-      readAsText: vi.fn(function(this: any, blob: Blob) {
-        Promise.resolve().then(() => {
+      readAsText: vi.fn(function(this: any, _blob: Blob) {
+        void Promise.resolve().then(() => {
           this.result = 'mock text content';
           this.readyState = 2;
           const event = { target: this };
