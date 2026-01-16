@@ -2,6 +2,7 @@
  * Integration-lite tests for HEIC decoder adapter
  * Covers TEST_CHECKLIST.md item 1.38
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 

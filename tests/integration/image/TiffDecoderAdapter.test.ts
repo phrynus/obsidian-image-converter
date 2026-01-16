@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
 /**
  * Integration-lite tests for TIFF decoder adapter
  * Covers TEST_CHECKLIST.md item 1.39

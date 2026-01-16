@@ -2,6 +2,7 @@
  * Integration-lite tests for FFmpeg AVIF adapter
  * Covers TEST_CHECKLIST.md items 1.35–1.37 and 1.45
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, import/no-nodejs-modules */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventEmitter } from 'events';

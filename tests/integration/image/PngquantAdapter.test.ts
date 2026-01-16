@@ -2,6 +2,7 @@
  * Integration-lite tests for PNGQUANT adapter
  * Covers TEST_CHECKLIST.md items 1.32–1.34
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, import/no-nodejs-modules */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
