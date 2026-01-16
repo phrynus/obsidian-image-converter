@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unnecessary-type-assertion */
 import { describe, it, expect, vi } from 'vitest';
 import { PresetSelectionModal } from '../../../src/PresetSelectionModal';
 import ImageConverterPlugin from '../../../src/main';

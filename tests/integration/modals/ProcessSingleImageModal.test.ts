@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unnecessary-type-assertion */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProcessSingleImageModal } from '../../../src/ProcessSingleImageModal';
 import ImageConverterPlugin from '../../../src/main';
@@ -516,7 +517,7 @@ const [crfSlider] = sliders;
     const cancelBtn = Array.from(((modal as any).contentEl as HTMLElement).querySelectorAll('button')).find(btnEl => (btnEl as HTMLButtonElement).textContent === 'Cancel') as HTMLButtonElement;
     cancelBtn.click();
     // In our mock, close() does not invoke onClose automatically; call it to simulate Obsidian behavior
-    await modal.onClose();
+    modal.onClose();
 
     // No extra processing beyond initial preview
     expect((plugin as any).imageProcessor.processImage).not.toHaveBeenCalledTimes(0);
@@ -555,7 +556,7 @@ const [crfSlider] = sliders;
 
     // Change and close
     ;(modal as any).modalSettings.quality = 60;
-    await modal.onClose();
+    modal.onClose();
     expect(saveSpy).toHaveBeenCalled();
     expect((plugin as any).settings.singleImageModalSettings.quality).toBe(60);
   });
@@ -579,7 +580,7 @@ const [crfSlider] = sliders;
     pathInput.dispatchEvent(new Event('change'));
 
     // Close modal to trigger save of modal settings into plugin.settings
-    await modal.onClose();
+    modal.onClose();
     expect((plugin as any).settings.singleImageModalSettings.pngquantExecutablePath).toBe('D:/bin/pngquant.exe');
   });
 

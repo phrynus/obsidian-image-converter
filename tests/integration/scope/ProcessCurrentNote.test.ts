@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/no-floating-promises, @typescript-eslint/naming-convention, obsidianmd/no-tfile-tfolder-cast */
 import { describe, it, expect, vi } from 'vitest';
 import { ProcessCurrentNote } from '../../../src/ProcessCurrentNote';
 import ImageConverterPlugin from '../../../src/main';
