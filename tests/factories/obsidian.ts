@@ -2,6 +2,7 @@
  * Factory functions for creating mock Obsidian API objects
  * Provides test doubles for Obsidian-specific functionality
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-type-assertion, obsidianmd/no-tfile-tfolder-cast, obsidianmd/hardcoded-config-path */
 
 import { vi } from 'vitest';
 import { Notice, TFile, TFolder, Vault, App, MetadataCache, Workspace, MarkdownView, PluginManifest } from 'obsidian';
