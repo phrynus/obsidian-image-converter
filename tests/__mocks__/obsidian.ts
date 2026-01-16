@@ -61,14 +61,21 @@ export class Modal {
   containerEl: HTMLElement;
   modalEl: HTMLElement;
   titleEl: HTMLElement;
-  contentEl: HTMLElement;
+  contentEl: HTMLElement & { setCssProps: (props: Record<string, string>) => void };
   
   constructor(app: App) {
     this.app = app;
     this.modalEl = document.createElement('div');
     this.containerEl = document.createElement('div');
     this.titleEl = document.createElement('div');
-    this.contentEl = document.createElement('div');
+    const contentDiv = document.createElement('div');
+    // Add Obsidian's setCssProps method to contentEl
+    (contentDiv as any).setCssProps = (props: Record<string, string>) => {
+      Object.entries(props).forEach(([key, value]) => {
+        contentDiv.style.setProperty(key, value);
+      });
+    };
+    this.contentEl = contentDiv as HTMLElement & { setCssProps: (props: Record<string, string>) => void };
   }
   
   open() {}

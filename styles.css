@@ -100,10 +100,7 @@
     stroke-width: 1.5;
 }
 
-/* Tab label text - inherit font weight (normal or slightly bolder) */
-.image-converter-tab-label {
-    /* No specific styles needed here - inherits from parent */
-}
+/* Tab label text - inherits from parent, selector kept for potential future use */
 
 /* ------------------- Preset Group --------------------- */
 .image-converter-preset-group {
@@ -666,10 +663,7 @@ html[data-theme='dark'] {
     background-color: var(--background-modifier-hover);
 }
 
-.image-converter-available-variables-modal td:nth-child(2) {
-    /* width: 60%; */
-    /* Adjust width ratio as needed */
-}
+/* .image-converter-available-variables-modal td:nth-child(2) - width adjustable as needed */
 
 .image-converter-available-variables-modal td:last-child {
     font-family: monospace;
@@ -1296,6 +1290,7 @@ html[data-theme='dark'] {
     background-color: var(--background-secondary);
     color: var(--text-normal);
     height: 28px;
+    appearance: textfield;
     -moz-appearance: textfield; /* Removes arrows in Firefox */
 }
 
@@ -1630,7 +1625,6 @@ html[data-theme='dark'] {
         .color-preview {
             border: 1px solid var(--background-modifier-border);
         }
-    }
 }
 
 
@@ -1913,6 +1907,18 @@ html[data-theme='dark'] {
     gap: 4px;
 }
 
+.image-converter-annotation-tool-image-annotation-modal .text-background-controls.is-hidden {
+    display: none;
+}
+
+.image-converter-annotation-tool-image-annotation-modal .image-converter-annotation-tool-preset-buttons.is-hidden {
+    display: none;
+}
+
+.image-converter-annotation-tool-image-annotation-modal .image-converter-annotation-tool-preset-color.no-border {
+    border: none;
+}
+
 .image-converter-annotation-tool-image-annotation-modal .text-bg-controls {
     display: flex;
     flex-direction: row;
@@ -2181,6 +2187,7 @@ html[data-theme='dark'] {
 }
 
 .crop-tool-modal .custom-ratio-input[type=number] {
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
@@ -2238,6 +2245,7 @@ html[data-theme='dark'] {
 .crop-tool-modal .slider {
     flex: 1;
     height: 6px;
+    appearance: none;
     -webkit-appearance: none;
     background: var(--background-modifier-border);
     border-radius: 3px;
@@ -3520,9 +3528,7 @@ html[data-theme='dark'] {
     padding: 10px;
 }
 
-.image-converter-preview-header-compact {
-    /* margin-top: 10px; */
-}
+/* .image-converter-preview-header-compact - margin adjustable as needed */
 /* ============================================ */
 /* RESPONSIVE DESIGN FOR SMALL SCREENS */
 /* ============================================ */

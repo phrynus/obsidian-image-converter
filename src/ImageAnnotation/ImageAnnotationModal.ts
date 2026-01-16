@@ -13,10 +13,11 @@ import {
     FabricObject,
     PencilBrush,
     ActiveSelection,
+    Path,
 } from 'fabric';
 import { ConfirmDialog } from '../ImageConverterSettings';
 import ImageConverterPlugin from '../main';
-import { ToolMode, ToolPreset, BlendMode, BRUSH_SIZES, BRUSH_OPACITIES } from './types';
+import { ToolMode, ToolPreset, BlendMode, BRUSH_SIZES, BRUSH_OPACITIES, DrawingBrushWithComposite } from './types';
 import { hexToRgba, rgbaToHex, rgbaToHexWithAlpha, analyzeImageColors, updateRgbaOpacity } from './utils/colorUtils';
 import { HistoryManager, ViewportManager, LayerManager, ToolManager, BackgroundManager } from './managers';
 import { ToolbarBuilder, ToolbarCallbacks } from './ui';
@@ -64,16 +65,16 @@ export class ImageAnnotationModal extends Modal {
     }
 
     private setupEventHandlers(): void {
-        this.boundKeyDownHandler = this.handleKeyDown.bind(this);
-        this.boundKeyUpHandler = this.handleKeyUp.bind(this);
+        this.boundKeyDownHandler = (e: KeyboardEvent): void => { this.handleKeyDown(e); };
+        this.boundKeyUpHandler = (e: KeyboardEvent): void => { this.handleKeyUp(e); };
         this.scope = new Scope();
         this.registerShortcuts();
         this.preventDefaultHandlers();
     }
 
     private setupCloseButton(): void {
-        const closeButton = this.modalEl.querySelector('.modal-close-button') as HTMLElement | null;
-        if (closeButton) {
+        const closeButton = this.modalEl.querySelector('.modal-close-button');
+        if (closeButton instanceof HTMLElement) {
             this.componentContainer.registerDomEvent(closeButton, 'click', (e: MouseEvent) => {
                 e.stopPropagation();
                 this.close();
@@ -94,10 +95,9 @@ export class ImageAnnotationModal extends Modal {
         });
     }
 
-    async onOpen(): Promise<void> {
+    onOpen(): void {
         const { contentEl } = this;
-        contentEl.style.padding = '0';
-        contentEl.style.overflow = 'hidden';
+        contentEl.setCssProps({ 'padding': '0', 'overflow': 'hidden' });
 
         const modalContainer = contentEl.createDiv('image-converter-annotation-tool-modal-container');
 
@@ -113,6 +113,10 @@ export class ImageAnnotationModal extends Modal {
         const canvasContainer = modalContainer.createDiv('image-converter-annotation-tool-canvas-container');
         const canvasEl = canvasContainer.createEl('canvas');
 
+        void this.loadImage(canvasEl);
+    }
+
+    private async loadImage(canvasEl: HTMLCanvasElement): Promise<void> {
         try {
             const arrayBuffer = await this.app.vault.readBinary(this.file);
             const blob = new Blob([arrayBuffer]);
@@ -239,7 +243,7 @@ export class ImageAnnotationModal extends Modal {
             onArrowToggle: () => this.toolManager.toggleArrowMode(),
             onResetZoom: () => this.viewportManager.resetZoom(),
             onClearAll: () => this.clearAll(),
-            onSave: () => this.saveAnnotation(),
+            onSave: () => { void this.saveAnnotation(); },
             onBringToFront: () => this.layerManager.bringToFront(),
             onBringForward: () => this.layerManager.bringForward(),
             onSendBackward: () => this.layerManager.sendBackward(),
@@ -249,7 +253,7 @@ export class ImageAnnotationModal extends Modal {
             onSizeChange: (index) => this.toolManager.setBrushSizeIndex(index),
             onOpacityChange: (index, opacity) => this.handleOpacityChange(index, opacity),
             onBlendModeChange: (mode) => this.handleBlendModeChange(mode),
-            onPresetSave: (index) => this.savePreset(index),
+            onPresetSave: (index) => { void this.savePreset(index); },
             onPresetLoad: (index) => this.loadPreset(index),
             onTextBackgroundChange: (color) => this.setTextBackground(color),
             getCanvas: () => this.canvas,
@@ -280,13 +284,13 @@ export class ImageAnnotationModal extends Modal {
     private onToolChanged(tool: ToolMode): void {
         // Handle text background controls visibility
         if (this.textBackgroundControls) {
-            this.textBackgroundControls.style.display = tool === ToolMode.TEXT ? 'flex' : 'none';
+            this.textBackgroundControls.toggleClass('is-hidden', tool !== ToolMode.TEXT);
         }
 
         // Show/hide preset buttons
         const presetContainer = this.modalEl.querySelector('.image-converter-annotation-tool-preset-buttons');
         if (presetContainer instanceof HTMLElement) {
-            presetContainer.style.display = tool === ToolMode.NONE ? 'none' : 'flex';
+            presetContainer.toggleClass('is-hidden', tool === ToolMode.NONE);
             this.updatePresetButtons();
         }
     }
@@ -307,8 +311,8 @@ export class ImageAnnotationModal extends Modal {
         if (this.canvas) {
             const activeObject = this.canvas.getActiveObject();
             if (activeObject) {
-                if (activeObject.type === 'activeselection') {
-                    const selection = activeObject as ActiveSelection;
+                if (activeObject instanceof ActiveSelection) {
+                    const selection = activeObject;
                     selection.getObjects().forEach(obj => {
                         this.updateObjectOpacity(obj, opacity);
                     });
@@ -327,8 +331,8 @@ export class ImageAnnotationModal extends Modal {
         if (this.canvas) {
             const activeObject = this.canvas.getActiveObject();
             if (activeObject) {
-                if (activeObject.type === 'activeselection') {
-                    const selection = activeObject as ActiveSelection;
+                if (activeObject instanceof ActiveSelection) {
+                    const selection = activeObject;
                     selection.getObjects().forEach(obj => {
                         if (!(obj instanceof FabricImage)) {
                             obj.globalCompositeOperation = mode;
@@ -409,7 +413,7 @@ export class ImageAnnotationModal extends Modal {
     private registerHotkeys(): void {
         this.scope.register(['Mod'], 'S', (evt: KeyboardEvent) => {
             evt.preventDefault();
-            this.saveAnnotation();
+            void this.saveAnnotation();
         });
 
         this.scope.register(['Mod'], 'A', (evt: KeyboardEvent) => {
@@ -422,16 +426,16 @@ export class ImageAnnotationModal extends Modal {
         this.scope.register(['Mod'], 'Z', (evt: KeyboardEvent) => {
             evt.preventDefault();
             if (evt.shiftKey) {
-                this.historyManager.redo();
+                void this.historyManager.redo();
             } else {
-                this.historyManager.undo();
+                void this.historyManager.undo();
             }
             return false;
         });
 
         this.scope.register(['Mod', 'Shift'], 'Z', (evt: KeyboardEvent) => {
             evt.preventDefault();
-            this.historyManager.redo();
+            void this.historyManager.redo();
             return false;
         });
 
@@ -485,9 +489,9 @@ export class ImageAnnotationModal extends Modal {
             e.preventDefault();
             e.stopPropagation();
             if (e.shiftKey) {
-                this.historyManager.redo();
+                void this.historyManager.redo();
             } else {
-                this.historyManager.undo();
+                void this.historyManager.undo();
             }
         }
     }
@@ -504,13 +508,14 @@ export class ImageAnnotationModal extends Modal {
     private initializeCanvasEventHandlers(): void {
         if (!this.canvas) return;
 
-        this.canvas.freeDrawingBrush = new PencilBrush(this.canvas);
-        this.canvas.freeDrawingBrush.width = BRUSH_SIZES[this.toolManager.getBrushSizeIndex()];
-        (this.canvas.freeDrawingBrush as any).globalCompositeOperation = this.toolManager.getBlendMode();
+        const brush = new PencilBrush(this.canvas);
+        brush.width = BRUSH_SIZES[this.toolManager.getBrushSizeIndex()];
+        (brush as DrawingBrushWithComposite).globalCompositeOperation = this.toolManager.getBlendMode();
+        this.canvas.freeDrawingBrush = brush;
 
         this.toolManager.updateBrushColor();
 
-        this.canvas.on('path:created', (e: any) => {
+        this.canvas.on('path:created', (e: { path?: FabricObject }) => {
             if (!this.historyManager.isPerformingUndoRedo()) {
                 if (e.path) {
                     e.path.globalCompositeOperation = this.toolManager.getBlendMode();
@@ -523,7 +528,7 @@ export class ImageAnnotationModal extends Modal {
         this.canvas.on('object:added', (e) => {
             this.toolManager.updateObjectInteractivity();
             if (e.target instanceof FabricImage || this.historyManager.isPerformingUndoRedo()) return;
-            if (!(e.target.type === 'path')) {
+            if (e.target && !(e.target instanceof Path)) {
                 this.historyManager.saveState();
             }
         });
@@ -716,7 +721,7 @@ export class ImageAnnotationModal extends Modal {
                 colorPicker.value = rgbaToHex(color);
             }
 
-            const bgColor = firstObject.backgroundColor as string;
+            const bgColor = firstObject.backgroundColor;
             if (bgColor && bgColor !== 'transparent') {
                 const { hex, alpha } = rgbaToHexWithAlpha(bgColor);
                 if (hex !== bgColorPicker.value) {
@@ -933,8 +938,8 @@ export class ImageAnnotationModal extends Modal {
             return;
         }
 
-        if (activeObject.type === 'activeselection') {
-            const activeSelection = activeObject as ActiveSelection;
+        if (activeObject instanceof ActiveSelection) {
+            const activeSelection = activeObject;
             const objectsToRemove = activeSelection.getObjects();
 
             objectsToRemove.forEach(obj => {
@@ -1011,7 +1016,7 @@ export class ImageAnnotationModal extends Modal {
     private cleanup(): void {
         if (this.canvas) {
             this.canvas.off();
-            this.canvas.dispose();
+            void this.canvas.dispose();
         }
 
         this.componentContainer.unload();

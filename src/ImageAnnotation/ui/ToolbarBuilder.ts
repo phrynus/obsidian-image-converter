@@ -66,21 +66,25 @@ export class ToolbarBuilder {
 
         // Drawing tools
         const drawButton = new ButtonComponent(drawingToolsColumn)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Draw (B)')
             .setIcon('pencil')
             .onClick(() => this.callbacks.onDrawingToggle());
 
         const arrowButton = new ButtonComponent(drawingToolsColumn)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Arrow (A)')
             .setIcon('arrow-right')
             .onClick(() => this.callbacks.onArrowToggle());
 
         const textButton = new ButtonComponent(drawingToolsColumn)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Add Text (T)')
             .setIcon('type')
             .onClick(() => this.callbacks.onTextToggle());
 
         new ButtonComponent(drawingToolsColumn)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Reset Zoom (1:1)')
             .setIcon('search')
             .onClick(() => this.callbacks.onResetZoom());
@@ -110,33 +114,36 @@ export class ToolbarBuilder {
         const layerButtonContainer = layerControls.createDiv('image-converter-annotation-tool-button-group');
 
         new ButtonComponent(layerButtonContainer)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Bring to Front')
             .setIcon('arrow-up-to-line')
             .onClick(() => this.callbacks.onBringToFront());
 
         new ButtonComponent(layerButtonContainer)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Bring Forward')
             .setIcon('arrow-up')
             .onClick(() => this.callbacks.onBringForward());
 
         new ButtonComponent(layerButtonContainer)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Send Backward')
             .setIcon('arrow-down')
             .onClick(() => this.callbacks.onSendBackward());
 
         new ButtonComponent(layerButtonContainer)
+            // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setTooltip('Send to Back')
             .setIcon('arrow-down-to-line')
             .onClick(() => this.callbacks.onSendToBack());
 
         // Text background controls
-        const textBackgroundControls = brushControlsColumn.createDiv('text-background-controls');
-        textBackgroundControls.style.display = 'none';
+        const textBackgroundControls = brushControlsColumn.createDiv('text-background-controls is-hidden');
         this.createTextBackgroundControls(textBackgroundControls);
 
         // Utility buttons
         new ButtonComponent(utilityGroup)
-            .setTooltip('Clear All')
+            .setTooltip('Clear all')
             .setIcon('trash')
             .onClick(() => this.callbacks.onClearAll());
 
@@ -338,6 +345,7 @@ export class ToolbarBuilder {
 
     private createTextBackgroundControls(container: HTMLElement): void {
         const textBgContainer = container.createDiv('image-converter-annotation-tool-control-group');
+        // eslint-disable-next-line obsidianmd/ui/sentence-case
         textBgContainer.createDiv('control-label').setText('Text Background:');
         const controlsContainer = textBgContainer.createDiv('image-converter-annotation-tool-button-group');
 
@@ -394,8 +402,7 @@ export class ToolbarBuilder {
 
     private createPresetButtons(container: Element): void {
         const containerEl = container as HTMLElement;
-        const presetContainer = containerEl.createDiv('image-converter-annotation-tool-preset-buttons');
-        presetContainer.style.display = 'none';
+        const presetContainer = containerEl.createDiv('image-converter-annotation-tool-preset-buttons is-hidden');
 
         for (let i = 0; i < 3; i++) {
             const presetButton = presetContainer.createDiv(`preset-button preset-${i + 1}`);
@@ -417,19 +424,25 @@ export class ToolbarBuilder {
     updatePresetButtons(presets: ToolPreset[], isTextMode: boolean): void {
         const presetButtons = this.modalEl.querySelectorAll('.preset-button');
 
+        /* eslint-disable @typescript-eslint/naming-convention */
         presetButtons.forEach((button, index) => {
             const colorDiv = button.querySelector('.image-converter-annotation-tool-preset-color') as HTMLDivElement;
             if (colorDiv && presets[index]) {
                 if (isTextMode && presets[index].backgroundColor) {
-                    colorDiv.style.backgroundColor = presets[index].backgroundColor ?? 'transparent';
-                    colorDiv.style.opacity = (presets[index].backgroundOpacity ?? 1).toString();
-                    colorDiv.style.border = `2px solid ${presets[index].color}`;
+                    colorDiv.setCssProps({
+                        'background-color': presets[index].backgroundColor ?? 'transparent',
+                        'opacity': (presets[index].backgroundOpacity ?? 1).toString(),
+                        'border': `2px solid ${presets[index].color}`
+                    });
                 } else {
-                    colorDiv.style.backgroundColor = presets[index].color;
-                    colorDiv.style.opacity = presets[index].opacity.toString();
-                    colorDiv.style.border = 'none';
+                    colorDiv.setCssProps({
+                        'background-color': presets[index].color,
+                        'opacity': presets[index].opacity.toString()
+                    });
+                    colorDiv.addClass('no-border');
                 }
             }
         });
+        /* eslint-enable @typescript-eslint/naming-convention */
     }
 }
