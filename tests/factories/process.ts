@@ -2,6 +2,7 @@
  * Factory functions for mocking process and spawn operations
  * Used for testing external tool integrations
  */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, import/no-nodejs-modules */
 
 import { vi } from 'vitest';
 import { EventEmitter } from 'events';
@@ -41,7 +42,7 @@ export function mockChildProcess(options: MockSpawnOptions = {}) {
   if (options.delay) {
     setTimeout(() => emitProcessEvents(proc, options), options.delay);
   } else {
-    Promise.resolve().then(() => emitProcessEvents(proc, options));
+    void Promise.resolve().then(() => emitProcessEvents(proc, options));
   }
   
   return proc;
@@ -82,7 +83,7 @@ export function stubExec(defaultOptions: MockSpawnOptions = {}) {
     const proc = mockChildProcess(defaultOptions);
     
     if (callback) {
-      Promise.resolve().then(() => {
+      void Promise.resolve().then(() => {
         if (defaultOptions.error) {
           callback(defaultOptions.error, '', defaultOptions.stderr?.toString() || '');
         } else {
