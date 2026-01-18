@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-type-assertion, @typescript-eslint/await-thenable, obsidianmd/hardcoded-config-path */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ImageConverterPlugin from '../../../src/main';
 import { ImageConverterSettingTab, DEFAULT_SETTINGS, type ConversionPreset, type FilenamePreset } from '../../../src/ImageConverterSettings';
@@ -97,6 +98,25 @@ describe('Settings defaults and persistence (11.1–11.2)', () => {
     expect(plugin.settings.selectedFilenamePreset).toBe(DEFAULT_SETTINGS.filenamePresets[0].name);
     expect(plugin.settings.showSpaceSavedNotification).toBe(!DEFAULT_SETTINGS.showSpaceSavedNotification);
   });
+
+});
+
+describe('Settings migration (11.8)', () => {
+  it('Given legacy cache location, When loadSettings, Then migrates to config and persists (11.8)', async () => {
+    const app = makeAppWithStorage();
+    const manifest = { id: 'image-converter' } as any;
+    const plugin = new ImageConverterPlugin(app, manifest);
+
+    const saveDataSpy = vi.spyOn(plugin as any, 'saveData').mockResolvedValue(undefined);
+    vi.spyOn(plugin as any, 'loadData').mockResolvedValue({
+      imageAlignmentCacheLocation: '.obsidian'
+    });
+
+    await plugin.loadSettings();
+
+    expect(plugin.settings.imageAlignmentCacheLocation).toBe('config');
+    expect(saveDataSpy).toHaveBeenCalledWith(plugin.settings);
+  });
 });
 
 describe('getPresetByName fallback (part of 11.1/11.4)', () => {
@@ -117,10 +137,10 @@ describe('getPresetByName fallback (part of 11.1/11.4)', () => {
 });
 
 // -----------------------------
-// 11.6, 11.7, 11.8 UI and defaults behavior
+// 11.6, 11.7, 11.9 UI and defaults behavior
 // -----------------------------
 
-describe('Settings defaults, global preset application, and field constraints (11.6, 11.7, 11.8)', () => {
+describe('Settings defaults, global preset application, and field constraints (11.6, 11.7, 11.9)', () => {
   let app: App;
   let plugin: ImageConverterPlugin;
   let tab: ImageConverterSettingTab;
@@ -175,7 +195,7 @@ describe('Settings defaults, global preset application, and field constraints (1
     expect(sensSlider?.max).toBe('1');
   });
 
-  it('11.8 Safe defaults on missing fields: shallow merge preserves defaults for unspecified fields', async () => {
+  it('11.9 Safe defaults on missing fields: shallow merge preserves defaults for unspecified fields', async () => {
     // Simulate stored settings with only a couple of overrides
     const app2 = makeAppWithStorage();
     const plugin2 = new ImageConverterPlugin(app2, { id: 'image-converter' } as any);
@@ -198,10 +218,10 @@ describe('Settings defaults, global preset application, and field constraints (1
 });
 
 // -----------------------------
-// 11.3, 11.4, 11.5, 11.9 Preset management
+// 11.3, 11.4, 11.5, 11.11 Preset management
 // -----------------------------
 
-describe('Settings preset management (11.3, 11.4, 11.5, 11.9)', () => {
+describe('Settings preset management (11.3, 11.4, 11.5, 11.11)', () => {
   let app: App;
   let plugin: ImageConverterPlugin;
   let tab: ImageConverterSettingTab;
@@ -326,7 +346,7 @@ describe('Settings preset management (11.3, 11.4, 11.5, 11.9)', () => {
     expect(plugin.settings.linkFormatSettings.selectedLinkFormatPreset).toBe(DEFAULT_SETTINGS.linkFormatSettings.selectedLinkFormatPreset);
   });
 
-  it('11.9 Preset reordering (drag-and-drop): on drop, new order persists', async () => {
+  it('11.11 Preset reordering (drag-and-drop): on drop, new order persists', async () => {
     const saveSpy = vi.spyOn(plugin, 'saveSettings').mockResolvedValue(undefined);
 
     tab.activeTab = 'conversion';

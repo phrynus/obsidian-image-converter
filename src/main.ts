@@ -352,7 +352,15 @@ export default class ImageConverterPlugin extends Plugin {
 
     // Load settings method
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData()) as ImageConverterSettings;
+        const loadedSettings = (await this.loadData()) as Partial<ImageConverterSettings> | null;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, loadedSettings ?? {}) as ImageConverterSettings;
+
+        // eslint-disable-next-line obsidianmd/hardcoded-config-path -- legacy stored value for migration
+        const legacyCacheLocation = ".obsidian";
+        if ((this.settings.imageAlignmentCacheLocation as string) === legacyCacheLocation) {
+            this.settings.imageAlignmentCacheLocation = "config";
+            await this.saveSettings();
+        }
     }
 
     // Save settings method
