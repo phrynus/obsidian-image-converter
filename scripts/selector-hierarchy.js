@@ -1,6 +1,13 @@
 
 /*
-This script copies BOTH the CSS Selector and the Hierarchy Tree to your clipboard.
+
+Can be used as simple debugging tool for CSS styling..
+
+1. Paste into Obsidian Developer Console.
+2. Click target.
+3. Look at the Console: You will see a visual tree map.
+4. The CSS selector and Hierarchy Tree is automatically copied to clipboard.
+
 
 ```example-clipboard
 div.view-header-title-container > div.view-header-title
