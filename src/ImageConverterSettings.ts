@@ -3014,7 +3014,7 @@ export class ImageConverterSettingTab extends PluginSettingTab {
                     enlargeOrReduce: "Auto",
                     allowLargerFiles: false,
                     skipConversionPatterns: "",
-                    ffmpegExecutablePath: "",
+                    ffmpegExecutablePath: this.plugin.settings.ffmpegExecutablePath || "",
                     ffmpegCrf: 23,
                     ffmpegPreset: "medium",
                 } as T;
