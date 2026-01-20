@@ -1043,9 +1043,10 @@ if (format === 'ORIGINAL') {
                 errorData += data.toString();
             });
 
-            ffmpeg.on('close', (code: number) => {
+            ffmpeg.on('close', (code: number | null) => {
                 void (async () => {
-                    if (code !== 0) {
+                    // Treat both 0 and null as success (null can occur on Windows when process exits normally)
+                    if (code !== 0 && code !== null) {
                         errorHandled = true; // Mark error as handled
                         const closeErrorMessage = `FFmpeg failed with code ${code}: ${errorData}`;
                         console.error(closeErrorMessage);
