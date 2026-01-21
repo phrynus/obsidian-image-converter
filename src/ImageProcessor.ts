@@ -105,8 +105,10 @@ export class ImageProcessor {
         }
         
         // Check cache first (static cache shared across all instances)
-        if (ImageProcessor.encoderDetectionCache.has(normalizedPath)) {
-            return ImageProcessor.encoderDetectionCache.get(normalizedPath) || null;
+        // Only return cached value if it's a valid encoder (not null)
+        const cachedResult = ImageProcessor.encoderDetectionCache.get(normalizedPath);
+        if (cachedResult) {
+            return cachedResult;
         }
 
         return new Promise((resolve) => {
@@ -121,14 +123,14 @@ export class ImageProcessor {
             } catch (spawnError) {
                 const errorMessage = spawnError instanceof Error ? spawnError.message : String(spawnError);
                 console.error(`Failed to spawn FFmpeg for encoder detection: ${errorMessage}`);
-                ImageProcessor.encoderDetectionCache.set(normalizedPath, null);
+                // Don't cache null - allow retry on next detection attempt
                 resolve(null);
                 return;
             }
 
             if (!ffmpeg || !ffmpeg.stdout) {
                 console.error('FFmpeg process or stdout not available for encoder detection');
-                ImageProcessor.encoderDetectionCache.set(normalizedPath, null);
+                // Don't cache null - allow retry on next detection attempt
                 resolve(null);
                 return;
             }
@@ -190,8 +192,10 @@ export class ImageProcessor {
                     }
                 }
 
-                // Cache the result (static cache)
-                ImageProcessor.encoderDetectionCache.set(normalizedPath, validatedEncoder);
+                // Cache only successful results (don't cache null to allow retry)
+                if (validatedEncoder) {
+                    ImageProcessor.encoderDetectionCache.set(normalizedPath, validatedEncoder);
+                }
 
                 if (validatedEncoder) {
                     const config = ENCODER_CONFIGS[validatedEncoder];
@@ -207,7 +211,7 @@ export class ImageProcessor {
 
             ffmpeg.on('error', (err: Error) => {
                 console.error(`Error during encoder detection: ${err.message}`);
-                ImageProcessor.encoderDetectionCache.set(normalizedPath, null);
+                // Don't cache null - allow retry on next detection attempt
                 resolve(null);
             });
 
@@ -215,7 +219,7 @@ export class ImageProcessor {
             setTimeout(() => {
                 if (ffmpeg && !ffmpeg.killed) {
                     try { ffmpeg.kill('SIGTERM'); } catch { /* ignore */ }
-                    ImageProcessor.encoderDetectionCache.set(normalizedPath, null);
+                    // Don't cache null - allow retry on next detection attempt
                     resolve(null);
                 }
             }, 3000);
