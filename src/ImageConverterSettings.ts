@@ -2783,7 +2783,7 @@ export class ImageConverterSettingTab extends PluginSettingTab {
             // eslint-disable-next-line obsidianmd/ui/sentence-case
             .setName("Minimum compression savings (KB)")
             // eslint-disable-next-line obsidianmd/ui/sentence-case
-            .setDesc("This option lets you set how much the file size must drop before compression is kept. Sometimes an image only shrinks by a few KB but looks worse. Default is 30 KB, which means if the compressed file saves 30 KB or less, the original image data is used instead. Set to 0 to always allow compression when the output is smaller.")
+            .setDesc("This option allows you to further specify, how much the file size must be reduced before compressing the image. Sometimes an image's size might shrink by only 3 KB, but the visible degradation in quality is significant. This option helps catch those cases and avoids compressing such images. Default is 30kb, which means if after compressing the image file size would reduce only by 30kb or less, then the original image bytes will be used instead. Set to 0 to always allow compression when the output is smaller.")
             .addText((text) =>
                 text
                     .setPlaceholder("30")

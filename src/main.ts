@@ -769,7 +769,7 @@ export default class ImageConverterPlugin extends Plugin {
                             if (this.settings.revertToOriginalIfLarger && this.processedImage.byteLength + (minSavingsKB * 1024) > originalSize) {
                                 // User wants to revert AND processed image is larger
                                 this.showSizeComparisonNotification(originalSize, this.processedImage.byteLength);
-                                new Notice(`Using original image for "${file.name}" as processed image is larger / saving less than ${minSavingsKB}KB.`);
+                                new Notice(`Using original image for "${file.name}" because size reduction was less than ${minSavingsKB} KB.`);
 
                                 const fileBuffer = await file.arrayBuffer();
                                 tfile = await this.app.vault.createBinary(newFullPath, fileBuffer);
@@ -1107,7 +1107,7 @@ export default class ImageConverterPlugin extends Plugin {
                             if (this.settings.revertToOriginalIfLarger && this.processedImage.byteLength + (minSavingsKB * 1024) > originalSize) {
                                 // User wants to revert AND processed image is larger
                                 this.showSizeComparisonNotification(originalSize, this.processedImage.byteLength);
-                                new Notice(`Using original image for "${file.name}" as processed image is larger / saving less than ${minSavingsKB}KB.`);
+                                new Notice(`Using original image for "${file.name}" because size reduction was less than ${minSavingsKB} KB.`);
 
                                 const fileBuffer = await file.arrayBuffer();
                                 tfile = await this.app.vault.createBinary(newFullPath, fileBuffer);
