@@ -43,6 +43,19 @@ export class ImageResizer extends Component {
         };
     } = {};
 
+    // Tracks the last known good dimensions per image to avoid writing 0x0 during re-render.
+    private lastValidDimensions: {
+        [imageKey: string]: {
+            width: number;
+            height: number;
+        };
+    } = {};
+
+    // Tracks pending retry timers when DOM re-render momentarily yields invalid dimensions.
+    private resizeRetryTimers: {
+        [imageKey: string]: number;
+    } = {};
+
     // Debounce the cache update
     private debouncedSaveToCache: Debouncer<
         [image: HTMLImageElement, newWidth: number, newHeight: number],
@@ -144,6 +157,11 @@ export class ImageResizer extends Component {
         if (this.debouncedSaveToCache?.cancel) {
             this.debouncedSaveToCache.cancel();
         }
+
+        for (const timerId of Object.values(this.resizeRetryTimers)) {
+            window.clearTimeout(timerId);
+        }
+        this.resizeRetryTimers = {};
 
         // Clean up DOM elements
         this.cleanupHandles();
@@ -400,6 +418,18 @@ export class ImageResizer extends Component {
         if (this.activeImage.hasClass("image-resize-border")) {
             this.activeImage.removeClass("image-resize-border");
             this.activeImage.setCssStyles({ cursor: 'default' });
+        }
+
+        const activeFile = this.plugin.app.workspace.getActiveFile();
+        if (activeFile) {
+            const imageKey = this.getImageKey(this.activeImage, activeFile.path);
+            delete this.lastValidDimensions[imageKey];
+            if (this.resizeRetryTimers[imageKey]) {
+                window.clearTimeout(this.resizeRetryTimers[imageKey]);
+                delete this.resizeRetryTimers[imageKey];
+            }
+        } else {
+            this.lastValidDimensions = {};
         }
 
         this.activeImage = null;
@@ -701,6 +731,7 @@ export class ImageResizer extends Component {
         }
 
         // Reset the current handle
+        const previousHandle = this.currentHandle;
         this.currentHandle = null;
 
         // Determine final dimensions in a DOM-agnostic way (happy-dom often returns 0 for offset* values)
@@ -709,9 +740,24 @@ export class ImageResizer extends Component {
         const finalWidth = Number.isFinite(widthStyle) && widthStyle > 0 ? widthStyle : Math.round(this.initialWidth);
         const finalHeight = Number.isFinite(heightStyle) && heightStyle > 0 ? heightStyle : Math.round(this.initialHeight);
 
-        // Update the markdown link with the final dimensions
-        this.updateMarkdownLink(this.activeImage, finalWidth, finalHeight, this.currentHandle)
-            .catch(this.logAsyncError("Failed to update markdown link on resize completion"));
+        const activeFile = this.plugin.app.workspace.getActiveFile();
+        const notePath = activeFile?.path ?? "";
+        const resolvedDimensions = this.resolveValidDimensions(
+            this.activeImage,
+            notePath,
+            finalWidth,
+            finalHeight,
+            this.initialWidth,
+            this.initialHeight
+        );
+
+        if (!resolvedDimensions.isValid) {
+            this.queueRetryDimensionUpdate(notePath, previousHandle, "resize completion");
+        } else {
+            // Update the markdown link with the final dimensions
+            this.updateMarkdownLink(this.activeImage, resolvedDimensions.width, resolvedDimensions.height, previousHandle)
+                .catch(this.logAsyncError("Failed to update markdown link on resize completion"));
+        }
 
         // Mark flags
         this.resizeState.isDragging = false;
@@ -804,6 +850,23 @@ export class ImageResizer extends Component {
         const imageName = this.getImageName(image);
         if (!imageName) return;
 
+        const resolvedDimensions = this.resolveValidDimensions(
+            image,
+            notePath,
+            newWidth,
+            newHeight,
+            this.initialWidth,
+            this.initialHeight
+        );
+
+        if (!resolvedDimensions.isValid) {
+            this.queueRetryDimensionUpdate(notePath, null, "scroll resize");
+            return;
+        }
+
+        const resolvedWidth = resolvedDimensions.width;
+        const resolvedHeight = resolvedDimensions.height;
+
         // Check if alignment is enabled
         const isAlignmentEnabled = this.plugin.settings.isImageAlignmentEnabled;
 
@@ -821,20 +884,20 @@ export class ImageResizer extends Component {
         // Buffer the dimensions (only if needed for later use, e.g., debouncing and alignment is enabled)
         if (isAlignmentEnabled && imageHash) {
             this.resizeBuffer[imageHash] = {
-                width: newWidth,
-                height: newHeight,
+                width: resolvedWidth,
+                height: resolvedHeight,
             };
         }
 
         // Use throttled version if alignment is disabled OR if the image doesn't have a positional class
         if (!isAlignmentEnabled || !hasPositionalClass) {
             // Update markdown link immediately (but still throttled)
-            this.throttledUpdateImageLink(image, newWidth, newHeight, null);
+            this.throttledUpdateImageLink(image, resolvedWidth, resolvedHeight, null);
         }
 
         // Debounced update to the markdown link and cache (only if alignment is enabled)
         if (isAlignmentEnabled) {
-            this.debouncedSaveToCache(image, newWidth, newHeight);
+            this.debouncedSaveToCache(image, resolvedWidth, resolvedHeight);
         }
 
         // Reset scroll state after delay
@@ -1033,6 +1096,11 @@ export class ImageResizer extends Component {
         }
         const notePath = activeFile.path;
 
+        // Callers (handleMouseUp, handleMouseWheel) already validate dimensions via resolveValidDimensions.
+        // Use passed dimensions directly.
+        const resolvedWidth = newWidth;
+        const resolvedHeight = newHeight;
+
         // const cachedAlignment: ImagePositionData | null = null;
         // Update ImageAlignmentManager cache after resizing
         if (this.plugin.settings.isImageAlignmentEnabled && this.plugin.ImageAlignmentManager) {
@@ -1075,24 +1143,24 @@ export class ImageResizer extends Component {
 
                     const cachedWidth = cachedAlignment?.width || undefined; // Default to undefined if not found which we later filter out
                     const cachedHeight = cachedAlignment?.height || undefined; // Default to undefined if not found which we later filter out
-                    const dimensionPart = `${Math.round(newWidth)}x${Math.round(newHeight)}`;
+                    const dimensionPart = `${Math.round(resolvedWidth)}x${Math.round(resolvedHeight)}`;
 
                     if (match.type === "md") {
 
                         if (this.currentHandle === "border") {
-                            widthParam = `${Math.round(newWidth)}x`;
-                            heightParam = `${Math.round(newHeight)}`;
+                            widthParam = `${Math.round(resolvedWidth)}x`;
+                            heightParam = `${Math.round(resolvedHeight)}`;
                         } else if (["n", "s"].includes(currentHandle || "")) {
                             widthParam = cachedWidth ?? (match.existingWidth !== undefined ? `${match.existingWidth}x` : "x");
-                            heightParam = `${Math.round(newHeight)}`;
+                            heightParam = `${Math.round(resolvedHeight)}`;
                             if (widthParam === "x") widthParam = `${this.initialWidth}x`;
                         } else if (["e", "w"].includes(currentHandle || "")) {
-                            widthParam = `${Math.round(newWidth)}x`;
+                            widthParam = `${Math.round(resolvedWidth)}x`;
                             heightParam = cachedHeight ?? (match.existingHeight !== undefined ? `${match.existingHeight}` : "");
                             if (heightParam === "") heightParam = `${this.initialHeight}`;
                         } else {
-                            widthParam = `${Math.round(newWidth)}x`;
-                            heightParam = `${Math.round(newHeight)}`;
+                            widthParam = `${Math.round(resolvedWidth)}x`;
+                            heightParam = `${Math.round(resolvedHeight)}`;
                         }
 
                         if (match.caption) {
@@ -1105,22 +1173,20 @@ export class ImageResizer extends Component {
 
                     } else {
                         if (this.currentHandle === "border") {
-                            widthParam = `${Math.round(newWidth)}x`;
-                            heightParam = `${Math.round(newHeight)}`;
+                            widthParam = `${Math.round(resolvedWidth)}x`;
+                            heightParam = `${Math.round(resolvedHeight)}`;
                         } else if (["n", "s"].includes(currentHandle || "")) {
                             widthParam = cachedWidth ?? (match.existingWidth !== undefined ? `${match.existingWidth}x` : "x");
-                            heightParam = `${Math.round(newHeight)}`;
+                            heightParam = `${Math.round(resolvedHeight)}`;
                             if (widthParam === "x") widthParam = `${this.initialWidth}x`;
                         } else if (["e", "w"].includes(currentHandle || "")) {
-                            widthParam = `${Math.round(newWidth)}x`;
+                            widthParam = `${Math.round(resolvedWidth)}x`;
                             heightParam = cachedHeight ?? (match.existingHeight !== undefined ? `${match.existingHeight}` : "");
                             if (heightParam === "") heightParam = `${this.initialHeight}`;
                         } else {
-                            widthParam = `${Math.round(newWidth)}x`;
-                            heightParam = `${Math.round(newHeight)}`;
+                            widthParam = `${Math.round(resolvedWidth)}x`;
+                            heightParam = `${Math.round(resolvedHeight)}`;
                         }
-
-                        const dimensionPart = `${Math.round(newWidth)}x${Math.round(newHeight)}`; // Single 'x'
 
                         if (match.caption) {
                             updatedContent = `![[${match.path}${match.spacing.beforeFirstPipe}|${match.caption}${match.spacing.beforeSecondPipe}|${dimensionPart}]]`;
@@ -1490,6 +1556,136 @@ export class ImageResizer extends Component {
         }
 
         return false;
+    }
+
+    /**
+     * Builds a stable cache key for an image within the current note.
+     * Ensures we can store last-known sizes even if the DOM is re-rendered.
+     *
+     * @param image - The image element being resized.
+     * @param notePath - The path of the active note.
+     * @returns The cache key for the image within the note.
+     */
+    private getImageKey(image: HTMLImageElement, notePath: string): string {
+        const imageName = this.getImageName(image) ?? image.getAttribute("src") ?? "unknown";
+        return `${notePath}::${imageName}`;
+    }
+
+    /**
+     * Determines whether a size value is a usable dimension.
+     *
+     * @param value - The dimension to validate.
+     * @returns True if the dimension is finite and greater than zero.
+     */
+    private isValidDimension(value: number): boolean {
+        return Number.isFinite(value) && value > 0;
+    }
+
+    /**
+     * Normalizes dimensions for link updates.
+     * Falls back to last-known valid values or provided fallbacks to avoid writing 0x0.
+     *
+     * @param image - The image element being resized.
+     * @param notePath - The path of the active note.
+     * @param newWidth - The latest width from the resize interaction.
+     * @param newHeight - The latest height from the resize interaction.
+     * @param fallbackWidth - Optional fallback width (e.g., initial width).
+     * @param fallbackHeight - Optional fallback height (e.g., initial height).
+     * @returns The resolved dimensions and whether they are valid.
+     */
+    private resolveValidDimensions(
+        image: HTMLImageElement,
+        notePath: string,
+        newWidth: number,
+        newHeight: number,
+        fallbackWidth?: number,
+        fallbackHeight?: number
+    ): { width: number; height: number; isValid: boolean } {
+        const imageKey = this.getImageKey(image, notePath);
+        const areBothValid = (widthValue: number, heightValue: number): boolean =>
+            this.isValidDimension(widthValue) && this.isValidDimension(heightValue);
+
+        // Try sources in order: new values → cached values → fallback values
+        const dimensionSources: Array<{ width: number; height: number } | undefined> = [
+            { width: newWidth, height: newHeight },
+            this.lastValidDimensions[imageKey],
+            fallbackWidth !== undefined && fallbackHeight !== undefined
+                ? { width: fallbackWidth, height: fallbackHeight }
+                : undefined,
+        ];
+
+        for (const source of dimensionSources) {
+            if (source && areBothValid(source.width, source.height)) {
+                this.lastValidDimensions[imageKey] = source;
+                return { ...source, isValid: true };
+            }
+        }
+
+        return { width: newWidth, height: newHeight, isValid: false };
+    }
+
+    /**
+     * Queues a short retry when a renderer temporarily reports invalid sizes.
+     *
+     * @param imageKey - The cache key for the image within the note.
+     * @param callback - The resize update to retry once DOM reflow completes.
+     * @param delayMs - Delay before retrying in milliseconds (80ms aligns with typical DOM reflow).
+     */
+    private scheduleRetry(imageKey: string, callback: () => void, delayMs = 80): void {
+        if (this.resizeRetryTimers[imageKey]) {
+            window.clearTimeout(this.resizeRetryTimers[imageKey]);
+        }
+        this.resizeRetryTimers[imageKey] = window.setTimeout(() => {
+            delete this.resizeRetryTimers[imageKey];
+            callback();
+        }, delayMs);
+    }
+
+    /**
+     * Retries dimension-based updates after transient renderer failures (e.g., reflow reporting 0x0).
+     *
+     * @param notePath - The path of the active note.
+     * @param handle - The resize handle (if any) used for the update.
+     * @param context - Text label used for logging failures.
+     */
+    private queueRetryDimensionUpdate(notePath: string, handle: string | null, context: string): void {
+        if (!this.activeImage) {
+            return;
+        }
+        const imageKey = this.getImageKey(this.activeImage, notePath);
+        this.scheduleRetry(imageKey, () => {
+            if (!this.activeImage) {
+                return;
+            }
+            const retryWidthStyle = parseInt(this.activeImage.style.width || '0', 10);
+            const retryHeightStyle = parseInt(this.activeImage.style.height || '0', 10);
+            const retryWidth = Number.isFinite(retryWidthStyle) && retryWidthStyle > 0
+                ? retryWidthStyle
+                : Math.round(this.initialWidth);
+            const retryHeight = Number.isFinite(retryHeightStyle) && retryHeightStyle > 0
+                ? retryHeightStyle
+                : Math.round(this.initialHeight);
+            const retryDimensions = this.resolveValidDimensions(
+                this.activeImage,
+                notePath,
+                retryWidth,
+                retryHeight,
+                this.initialWidth,
+                this.initialHeight
+            );
+            if (!retryDimensions.isValid) {
+                return;
+            }
+            if (handle) {
+                this.updateMarkdownLink(this.activeImage, retryDimensions.width, retryDimensions.height, handle)
+                    .catch(this.logAsyncError(`Failed to update markdown link on ${context} retry`));
+                return;
+            }
+            this.throttledUpdateImageLink(this.activeImage, retryDimensions.width, retryDimensions.height, null);
+            if (this.plugin.settings.isImageAlignmentEnabled && this.plugin.ImageAlignmentManager) {
+                this.debouncedSaveToCache(this.activeImage, retryDimensions.width, retryDimensions.height);
+            }
+        });
     }
 
     /**

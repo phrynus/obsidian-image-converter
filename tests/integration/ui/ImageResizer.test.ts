@@ -454,7 +454,7 @@ describe('ImageResizer additional behaviors (13.4–13.6, 13.7–13.14, 13.19, 1
 });
 
 // Registration, cleanup, gating, percent scroll, debounce/throttle
-describe('ImageResizer lifecycle and wheel behaviors (13.15–13.16, 13.17–13.18, 13.20, 13.21, 13.22–13.23)', () => {
+describe('ImageResizer lifecycle and wheel behaviors (13.15–13.16, 13.17–13.18, 13.20, 13.21, 13.22–13.23, 13.27–13.28)', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
@@ -652,6 +652,107 @@ describe('ImageResizer lifecycle and wheel behaviors (13.15–13.16, 13.17–13.
     timers.advance(400);
 
     expect(spyDebounced).toHaveBeenCalledTimes(1);
+    timers.restore();
+  });
+
+  it('13.27 Drag resize retry: when dimensions resolve to 0, retries and uses last valid values', () => {
+    const { resizer, markdownView } = makeResizer({ viewMode: 'source' });
+    const editor = {
+      getValue: () => '',
+      getCursor: () => ({ line: 0, ch: 0 }),
+      getLine: () => '![pic](/imgs/pic.jpg)',
+      lastLine: () => 0,
+      transaction: vi.fn(),
+      setCursor: vi.fn()
+    };
+    (markdownView as any).editor = editor;
+    (resizer as any).editor = editor;
+
+    const { container } = setupView();
+    const img = addInternalImage(container);
+    setRect(img, { width: 120, height: 80 });
+
+    (resizer as any).handleImageHover({ target: img } as any);
+    const wrapper = (img as any).matchParent('.image-resize-container')!;
+    const se = wrapper.querySelector('.image-resize-handle-se') as HTMLElement;
+
+    const updateSpy = vi
+      .spyOn(resizer as any, 'updateMarkdownLink')
+      .mockResolvedValue(undefined);
+
+    (resizer as any).resolveValidDimensions = vi.fn()
+      .mockReturnValueOnce({ isValid: false, width: 0, height: 0 })
+      .mockReturnValueOnce({ isValid: true, width: 120, height: 80 });
+
+    const timers = setupFakeTimers();
+
+    se.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 150, clientY: 120 }));
+
+    // Simulate transient 0x0 from DOM re-render
+    img.style.width = '0px';
+    img.style.height = '0px';
+
+    document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // First call should be skipped, retry scheduled
+    expect(updateSpy).not.toHaveBeenCalled();
+
+    timers.advance(160);
+
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+    const [[calledImage, width, height]] = updateSpy.mock.calls;
+    expect(calledImage).toBe(img);
+    expect(width).toBeGreaterThan(0);
+    expect(height).toBeGreaterThan(0);
+
+    timers.restore();
+  });
+
+  it('13.28 Scroll resize retry: when dimensions resolve to 0, retries and uses last valid values', () => {
+    const { resizer, markdownView } = makeResizer({ viewMode: 'source', overrides: { isScrollResizeEnabled: true, scrollwheelModifier: 'None' } });
+    const editor = {
+      getValue: () => '',
+      getCursor: () => ({ line: 0, ch: 0 }),
+      getLine: () => '![pic](/imgs/pic.jpg)',
+      lastLine: () => 0,
+      transaction: vi.fn(),
+      setCursor: vi.fn()
+    };
+    (markdownView as any).editor = editor;
+    (resizer as any).editor = editor;
+
+    const { container } = setupView();
+    const img = addInternalImage(container);
+    setRect(img, { width: 120, height: 80 });
+
+    (resizer as any).handleImageHover({ target: img, clientX: 5, clientY: 5 } as any);
+
+    const updateSpy = vi
+      .spyOn(resizer as any, 'updateMarkdownLink')
+      .mockResolvedValue(undefined);
+
+    (resizer as any).resolveValidDimensions = vi.fn()
+      .mockReturnValueOnce({ isValid: false, width: 0, height: 0 })
+      .mockReturnValueOnce({ isValid: true, width: 120, height: 80 });
+
+    const timers = setupFakeTimers();
+
+    // Force resize math to return 0x0 to trigger retry
+    (resizer as any).resizeImageScrollWheel = vi.fn(() => ({ newWidth: 0, newHeight: 0, newLeft: 0, newTop: 0 }));
+
+    img.dispatchEvent(new WheelEvent('wheel', { deltaY: -10, bubbles: true, cancelable: true }));
+
+    expect(updateSpy).not.toHaveBeenCalled();
+
+    timers.advance(160);
+
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+    const [[calledImage, width, height]] = updateSpy.mock.calls;
+    expect(calledImage).toBe(img);
+    expect(width).toBeGreaterThan(0);
+    expect(height).toBeGreaterThan(0);
+
     timers.restore();
   });
 });
