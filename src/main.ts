@@ -76,8 +76,16 @@ export default class ImageConverterPlugin extends Plugin {
     private processedImage: ArrayBuffer | null = null;
     private temporaryBuffers: (ArrayBuffer | Blob | null)[] = [];
 
+    private updateBodyStateClasses() {
+        document.body.classList.toggle(
+            'image-converter-disable-native-image-selection',
+            this.settings.disableObsidianImageSelectionOnClick
+        );
+    }
+
     async onload() {
         await this.loadSettings();
+        this.updateBodyStateClasses();
         this.addSettingTab(new ImageConverterSettingTab(this.app, this));
 
         // Initialize core components immediately
@@ -347,6 +355,7 @@ export default class ImageConverterPlugin extends Plugin {
         });
 
         document.body.classList.remove('image-captions-enabled');
+        document.body.classList.remove('image-converter-disable-native-image-selection');
     }
 
 
@@ -379,6 +388,7 @@ export default class ImageConverterPlugin extends Plugin {
     // Save settings method
     async saveSettings() {
         await this.saveData(this.settings);
+        this.updateBodyStateClasses();
     }
 
     // Command to open settings tab

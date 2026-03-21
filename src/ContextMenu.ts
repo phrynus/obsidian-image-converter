@@ -71,6 +71,30 @@ export class ContextMenu extends Component {
 	}
 
 	/**
+	 * Clears Obsidian's native image focus state so the default block edit affordances
+	 * do not reappear when our custom context menu is opened.
+	 */
+	private clearNativeImageFocus(img: HTMLImageElement): void {
+		if (!this.plugin.settings.disableObsidianImageSelectionOnClick) {
+			return;
+		}
+
+		if (!img.closest(".markdown-source-view")) {
+			return;
+		}
+
+		const { activeElement } = document;
+		if (activeElement instanceof HTMLElement && activeElement.closest(".image-embed")) {
+			activeElement.blur();
+		}
+
+		const imageEmbed = img.closest(".image-embed");
+		if (imageEmbed instanceof HTMLElement) {
+			imageEmbed.blur();
+		}
+	}
+
+	/**
 	 * Gets the native menus config from the vault.
 	 */
 	private isNativeMenusEnabled(): boolean {
@@ -133,6 +157,18 @@ export class ContextMenu extends Component {
 
 		this.registerDomEvent(
 			document,
+			"pointerdown",
+			this.handleContextMenuPointerDownCapture,
+			true
+		);
+		this.registerDomEvent(
+			document,
+			"mousedown",
+			this.handleContextMenuMouseDownCapture,
+			true
+		);
+		this.registerDomEvent(
+			document,
 			"contextmenu",
 			this.handleContextMenuEvent,
 			true
@@ -145,6 +181,78 @@ export class ContextMenu extends Component {
 	 * This function is called when the context menu is triggered on an image.
 	 * @param event - The MouseEvent object.
 	 */
+	private resolveImageFromTarget(target: HTMLElement): HTMLImageElement | null {
+		if (target instanceof HTMLImageElement) {
+			return target;
+		}
+
+		const wrapper = target.closest(".image-wrapper, .image-embed");
+		if (!wrapper) {
+			return null;
+		}
+
+		const img = wrapper.querySelector(".image-resize-container img, img");
+		return img instanceof HTMLImageElement ? img : null;
+	}
+
+	private getImageTargetForNativeFocusSuppression(
+		event: MouseEvent | PointerEvent
+	): HTMLImageElement | null {
+		if (!this.plugin.settings.disableObsidianImageSelectionOnClick) {
+			return null;
+		}
+
+		if (event.button !== 2) {
+			return null;
+		}
+
+		const { target } = event;
+		if (!(target instanceof HTMLElement)) {
+			return null;
+		}
+
+		const img = this.resolveImageFromTarget(target);
+		if (!(img instanceof HTMLImageElement)) {
+			return null;
+		}
+
+		if (!img.closest(".markdown-source-view")) {
+			return null;
+		}
+
+		if (this.plugin.supportedImageFormats.isExcalidrawImage(img)) {
+			return null;
+		}
+
+		return img;
+	}
+
+	private suppressNativeImageFocusOnRightMouseDown(
+		event: MouseEvent | PointerEvent
+	): void {
+		const img = this.getImageTargetForNativeFocusSuppression(event);
+		if (!img) {
+			return;
+		}
+
+		event.preventDefault();
+		event.stopPropagation();
+		event.stopImmediatePropagation();
+		this.clearNativeImageFocus(img);
+	}
+
+	handleContextMenuPointerDownCapture = (event: PointerEvent) => {
+		if (event.pointerType && event.pointerType !== "mouse") {
+			return;
+		}
+
+		this.suppressNativeImageFocusOnRightMouseDown(event);
+	};
+
+	handleContextMenuMouseDownCapture = (event: MouseEvent) => {
+		this.suppressNativeImageFocusOnRightMouseDown(event);
+	};
+
 	handleContextMenuEvent = (event: MouseEvent) => {
 		const target = event.target as HTMLElement;
 		const activeView = this.app.workspace.getActiveViewOfType(View);
@@ -154,8 +262,7 @@ export class ContextMenu extends Component {
 			return;
 		}
 
-		const img =
-			target instanceof HTMLImageElement ? target : target.closest("img");
+		const img = this.resolveImageFromTarget(target);
 		if (!img) {
 			return;
 		}
@@ -181,6 +288,7 @@ export class ContextMenu extends Component {
 
 		event.preventDefault(); // prevents the default context menu from appearing (if any)
 		event.stopPropagation(); // prevents the event from bubbling up to parent elements (like the callout)
+		this.clearNativeImageFocus(img);
 
 	   const menu = new Menu();
 	   let activeFile = this.app.workspace.getActiveFile();

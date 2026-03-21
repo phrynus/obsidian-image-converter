@@ -13,6 +13,66 @@
 } */
 
 /* --- Image Converter Settings --- */
+
+/* Failsafe: when native image selection is disabled, keep Obsidian's default
+ * Live Preview image focus affordances hidden even if focus slips through for a frame.
+ */
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.image-embed:focus-within,
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.internal-embed.image-embed:focus-within {
+	outline: none !important;
+	box-shadow: none !important;
+}
+
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.image-embed:focus-within
+	.edit-block-button,
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.internal-embed.image-embed:focus-within
+	.edit-block-button {
+	opacity: 0 !important;
+	pointer-events: none !important;
+}
+
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.image-embed
+	.image-wrapper::after,
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.internal-embed.image-embed
+	.image-wrapper::after {
+	content: none !important;
+	box-shadow: none !important;
+}
+
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.image-embed
+	.image-resize-corner,
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.internal-embed.image-embed
+	.image-resize-corner {
+	opacity: 0 !important;
+	pointer-events: none !important;
+}
+
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.image-embed:focus-within
+	.image-resize-corner::after,
+body.image-converter-disable-native-image-selection:not(.is-mobile)
+	.markdown-source-view
+	.internal-embed.image-embed:focus-within
+	.image-resize-corner::after {
+	opacity: 0 !important;
+}
 /* Remove X icon and get use all available space*/
 .image-converter-settings-tab {
 	padding: 20px;

@@ -25,6 +25,27 @@ function setupImg(wrapClass = 'markdown-preview-view') {
   return img;
 }
 
+function setupLivePreviewImage() {
+  document.body.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'markdown-source-view';
+  const embed = document.createElement('div');
+  embed.className = 'internal-embed image-embed';
+  embed.tabIndex = -1;
+  const imageWrapper = document.createElement('div');
+  imageWrapper.className = 'image-wrapper';
+  const img = document.createElement('img');
+  img.src = 'imgs/pic.jpg';
+  const corner = document.createElement('div');
+  corner.className = 'image-resize-corner';
+  imageWrapper.appendChild(img);
+  imageWrapper.appendChild(corner);
+  embed.appendChild(imageWrapper);
+  wrap.appendChild(embed);
+  document.body.appendChild(wrap);
+  return { wrap, embed, imageWrapper, img, corner };
+}
+
 describe('ContextMenu integration (14.1–14.6)', () => {
   let app: any;
   let plugin: any;
@@ -43,14 +64,20 @@ beforeEach(async () => {
 
     plugin = new ImageConverterPlugin(app as any, manifest as any);
     plugin.manifest = manifest as any;
-    plugin.settings = { enableContextMenu: true, isImageAlignmentEnabled: true } as any;
+    plugin.settings = {
+      enableContextMenu: true,
+      isImageAlignmentEnabled: true,
+      disableObsidianImageSelectionOnClick: false
+    } as any;
     plugin.supportedImageFormats = { isExcalidrawImage: () => false } as any; // default: not Excalidraw
   });
 
   describe('14.1 Document listener registration', () => {
-    it('registers a document contextmenu listener on construction', () => {
+    it('registers document listeners on construction', () => {
       const spy = vi.spyOn(document, 'addEventListener');
       const ctx = new contextMenuCls(app as any, plugin, {} as any, {} as any);
+      expect(spy).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
+      expect(spy).toHaveBeenCalledWith('mousedown', expect.any(Function), true);
       expect(spy).toHaveBeenCalledWith('contextmenu', expect.any(Function), true);
       (ctx as any).onunload?.();
     });
@@ -72,6 +99,23 @@ const ctx = new contextMenuCls(app as any, plugin, { getImagePath: () => null } 
       (app.workspace.getActiveViewOfType as any) = vi.fn(() => ({ getViewType: () => 'other' }));
       outsideImg.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
       expect(showSpy).not.toHaveBeenCalled();
+      (ctx as any).onunload?.();
+    });
+
+    it('suppresses native image focus on right mouse down and clears image embed focus before opening the custom context menu when click override is enabled', () => {
+      const showSpy = vi.spyOn((Menu as any).prototype, 'showAtMouseEvent');
+      plugin.settings.disableObsidianImageSelectionOnClick = true;
+      (app.workspace.getActiveViewOfType as any) = vi.fn(() => ({ getViewType: () => 'markdown' }));
+      const { corner, embed } = setupLivePreviewImage();
+      const blurSpy = vi.spyOn(embed, 'blur');
+
+      const ctx = new contextMenuCls(app as any, plugin, {} as any, {} as any);
+      const prevented = corner.dispatchEvent(new MouseEvent('mousedown', { button: 2, bubbles: true, cancelable: true }));
+      corner.dispatchEvent(new MouseEvent('contextmenu', { button: 2, bubbles: true, cancelable: true }));
+
+      expect(prevented).toBe(false);
+      expect(showSpy).toHaveBeenCalled();
+      expect(blurSpy).toHaveBeenCalled();
       (ctx as any).onunload?.();
     });
 

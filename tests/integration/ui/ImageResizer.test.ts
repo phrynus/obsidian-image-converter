@@ -42,6 +42,27 @@ function setupViewWithImage() {
   return { container, img, embed };
 }
 
+function setupViewWithImageWrapper() {
+  document.body.innerHTML = '';
+  const container = document.createElement('div');
+  container.className = 'markdown-source-view';
+  const embed = document.createElement('div');
+  embed.className = 'internal-embed image-embed';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'image-wrapper';
+  const img = document.createElement('img');
+  img.setAttribute('src', 'app://vault/imgs/pic.jpg');
+  setRect(img, { left: 0, top: 0, width: 200, height: 100 });
+  const corner = document.createElement('div');
+  corner.className = 'image-resize-corner';
+  wrapper.appendChild(img);
+  wrapper.appendChild(corner);
+  embed.appendChild(wrapper);
+  container.appendChild(embed);
+  document.body.appendChild(container);
+  return { container, embed, wrapper, img, corner };
+}
+
 function setupContainers() {
   document.body.innerHTML = '';
   const containerA = document.createElement('div');
@@ -91,6 +112,8 @@ function makeResizer({ viewMode = 'source', overrides = {}, workspaceOverride }:
     scrollwheelModifier: 'None',
     isImageAlignmentEnabled: false,
     isResizeInReadingModeEnabled: true,
+    disableObsidianImageSelectionOnClick: false,
+    dropPasteCursorLocation: 'back',
     resizeCursorLocation: 'front'
   }, overrides) as any;
   const resizer = new ImageResizer(plugin);
@@ -365,6 +388,81 @@ describe('ImageResizer additional behaviors (13.4–13.6, 13.7–13.14, 13.19, 1
     expect((editor.setCursor as any).mock.calls.length).toBe(0);
   });
 
+  it('13.29 Click override: given enabled setting, when clicking an internal image or native resize corner, then Obsidian selection is suppressed and drop/paste cursor placement is used', () => {
+    const lines = ['before', '![[imgs/pic.jpg|100x100]]', 'middle', '![[imgs/pic.jpg|120x120]]'];
+    const editor = {
+      getValue: () => lines.join('\n'),
+      getCursor: () => ({ line: 0, ch: 0 }),
+      getLine: (i: number) => lines[i] || '',
+      lastLine: () => lines.length - 1,
+      posAtMouse: vi.fn(() => ({ line: 3, ch: 8 })),
+      transaction: vi.fn(),
+      setCursor: vi.fn()
+    };
+
+    const { resizer, markdownView, plugin } = makeResizer({
+      viewMode: 'source',
+      overrides: {
+        disableObsidianImageSelectionOnClick: true,
+        dropPasteCursorLocation: 'front'
+      }
+    });
+    (markdownView as any).editor = editor;
+    (resizer as any).editor = editor;
+
+    const { corner, img } = setupViewWithImageWrapper();
+
+    const prevented = corner.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    expect(prevented).toBe(false);
+    expect(editor.setCursor).toHaveBeenCalledWith({ line: 3, ch: 0 });
+    expect((img as any).matchParent('.image-resize-container')).toBeTruthy();
+
+    plugin.settings.dropPasteCursorLocation = 'back';
+    (editor.posAtMouse as any).mockReturnValue({ line: 1, ch: 6 });
+    (editor.setCursor as any).mockClear?.();
+
+    img.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    expect(editor.setCursor).toHaveBeenCalledWith({ line: 1, ch: lines[1].length });
+  });
+
+  it('13.30 Click override disabled: given default setting, when clicking an internal image, then no cursor override is applied', () => {
+    const editor = {
+      getValue: () => '![[imgs/pic.jpg|100x100]]',
+      getCursor: () => ({ line: 0, ch: 0 }),
+      getLine: () => '![[imgs/pic.jpg|100x100]]',
+      lastLine: () => 0,
+      posAtMouse: vi.fn(() => ({ line: 0, ch: 5 })),
+      transaction: vi.fn(),
+      setCursor: vi.fn()
+    };
+
+    const { resizer, markdownView } = makeResizer({ viewMode: 'source' });
+    (markdownView as any).editor = editor;
+    (resizer as any).editor = editor;
+
+    const { container } = setupView();
+    const img = addInternalImage(container);
+
+    const prevented = img.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+    expect(prevented).toBe(true);
+    expect(editor.setCursor).not.toHaveBeenCalled();
+    expect((img as any).matchParent('.image-resize-container')).toBeNull();
+  });
+
+  it('13.31 Hovering native resize corner keeps plugin handles active for the same image', () => {
+    const { resizer } = makeResizer({ viewMode: 'source', overrides: { disableObsidianImageSelectionOnClick: true } });
+    const { img, corner } = setupViewWithImageWrapper();
+
+    (resizer as any).handleImageHover({ target: img } as any);
+    expect((img as any).matchParent('.image-resize-container')).toBeTruthy();
+
+    (resizer as any).handleImageHover({ target: corner } as any);
+
+    const container = (img as any).matchParent('.image-resize-container');
+    expect(container).toBeTruthy();
+    expect(container.querySelector('.image-resize-handle-se')).toBeTruthy();
+  });
+
   it('13.12 External image edge-resize: cursor changes near edges and uniform scaling on drag; markdown updated only if external link present (N/A in preview)', () => {
     const { resizer } = makeResizer();
     const { container } = setupView();
@@ -468,7 +566,7 @@ describe('ImageResizer lifecycle and wheel behaviors (13.15–13.16, 13.17–13.
 
     const scope: any = (resizer as any).viewScope;
     expect(Array.isArray(scope?.disposables)).toBe(true);
-    expect(scope.disposables.length).toBe(5);
+    expect(scope.disposables.length).toBe(7);
 
     (resizer as any).handleImageHover({ target: img, clientX: 10, clientY: 10 } as any);
     const wrapper = (img as any).matchParent('.image-resize-container')!;
@@ -776,6 +874,8 @@ describe('ImageResizer throttle policy when alignment disabled (13.23 variant)',
       scrollwheelModifier: 'None',
       isImageAlignmentEnabled: false,
       isResizeInReadingModeEnabled: true,
+      disableObsidianImageSelectionOnClick: false,
+      dropPasteCursorLocation: 'back',
     }, overrides) as any;
     const resizer = new ImageResizer(plugin);
     // Patch instance to satisfy Component.addChild in tests without touching global mocks

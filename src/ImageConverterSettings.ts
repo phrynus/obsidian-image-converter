@@ -201,6 +201,7 @@ export interface ImageConverterSettings {
     isDragAspectRatioLocked: boolean;
     isScrollResizeEnabled: boolean;
     isResizeInReadingModeEnabled: boolean;
+    disableObsidianImageSelectionOnClick: boolean;
 
     resizeSensitivity: number;
     scrollwheelModifier: "None" | "Shift" | "Control" | "Alt" | "Meta";
@@ -399,6 +400,7 @@ export const DEFAULT_SETTINGS: ImageConverterSettings = {
     isScrollResizeEnabled: true,
     isDragAspectRatioLocked: true,
     isResizeInReadingModeEnabled: false,
+    disableObsidianImageSelectionOnClick: false,
 
     resizeSensitivity: 0.1,
     scrollwheelModifier: "Shift",
@@ -1053,6 +1055,19 @@ export class ImageConverterSettingTab extends PluginSettingTab {
                             await this.plugin.saveSettings();
                         }));
             }
+
+            new Setting(imageDragResizeSection)
+                .setName("Disable Obsidian image selection on click 🛈")
+                .setDesc("Keep focus in the editor when clicking an internal image in live preview instead of showing Obsidian's default outline/resize corner. Cursor placement follows the drop/paste cursor position setting.")
+                .addToggle((toggle) =>
+                    toggle
+                        .setValue(this.plugin.settings.disableObsidianImageSelectionOnClick)
+                        .onChange(async (value) => {
+                            this.plugin.settings.disableObsidianImageSelectionOnClick = value;
+                            await this.plugin.saveSettings();
+                        })
+                );
+
             // New Setting: Resize Cursor Location
             new Setting(imageDragResizeSection)
                 .setName("Cursor position during resize 🛈")

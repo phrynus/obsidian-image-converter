@@ -80,6 +80,7 @@ describe('Settings defaults and persistence (11.1–11.2)', () => {
       .toBe(DEFAULT_SETTINGS.nonDestructiveResizeSettings.selectedResizePreset);
     expect(plugin.settings.enableImageCaptions).toBe(false);
     expect(plugin.settings.isDragAspectRatioLocked).toBe(true);
+    expect(plugin.settings.disableObsidianImageSelectionOnClick).toBe(false);
   });
 
   it('Given a change, When saveSettings then reload, Then values persist (11.2)', async () => {

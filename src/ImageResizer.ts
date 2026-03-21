@@ -238,6 +238,10 @@ export class ImageResizer extends Component {
         // 1. Hover Detection
         this.viewScope.registerDomEvent(this.markdownView.containerEl, 'mouseover', this.handleImageHover);
 
+        // Prevent Obsidian's native image widget focus/outline when requested, while keeping editor focus.
+        this.viewScope.registerDomEvent(this.markdownView.containerEl, 'mousedown', this.handleImageMouseDownCapture, { capture: true });
+        this.viewScope.registerDomEvent(this.markdownView.containerEl, 'click', this.handleImageClickCapture, { capture: true });
+
         // 2. Drag Handling: Mouse down, move, up events for handles
         this.viewScope.registerDomEvent(document, 'mousedown', this.handleMouseDown);
         this.viewScope.registerDomEvent(document, 'mousemove', this.handleMouseMove);
@@ -253,7 +257,71 @@ export class ImageResizer extends Component {
     //     // Auto unlaoded by obsidian
     // }
 
+    private resolveImageTarget(target: HTMLElement): HTMLImageElement | null {
+        if (target instanceof HTMLImageElement) {
+            return target;
+        }
 
+        const wrapper = target.closest(".image-wrapper, .image-embed");
+        if (!wrapper) {
+            return null;
+        }
+
+        const image = wrapper.querySelector(".image-resize-container img, img");
+        return image instanceof HTMLImageElement ? image : null;
+    }
+
+    private getInternalImageTargetForClickOverride(event: MouseEvent): HTMLImageElement | null {
+        if (!this.editor || !this.markdownView) return null;
+        if (!this.plugin.settings.disableObsidianImageSelectionOnClick) return null;
+        if (event.button !== 0) return null;
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return null;
+
+        const state = this.markdownView.getState();
+        if (state.mode !== "source") return null;
+
+        const { target } = event;
+        if (!(target instanceof HTMLElement)) return null;
+        if (!this.markdownView.containerEl.contains(target)) return null;
+        if (target.closest(".image-resize-handle, .edit-block-button")) return null;
+
+        const image = this.resolveImageTarget(target);
+        if (!image) return null;
+        if (!image.closest(".image-embed")) return null;
+        if (this.plugin.supportedImageFormats.isExcalidrawImage(image)) return null;
+        if (this.isExternalLink(image.src)) return null;
+
+        return image;
+    }
+
+    private handleImageMouseDownCapture = (event: MouseEvent) => {
+        const image = this.getInternalImageTargetForClickOverride(event);
+        if (!image) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+
+        this.handleImageHover(event);
+
+        const cursorPosition = this.getCursorPositionForImageClick(image, event);
+        if (cursorPosition && this.editor) {
+            this.editor.setCursor(cursorPosition);
+        }
+
+        const { activeElement } = document;
+        if (activeElement instanceof HTMLElement && activeElement.closest(".image-embed")) {
+            activeElement.blur();
+        }
+    };
+
+    private handleImageClickCapture = (event: MouseEvent) => {
+        if (!this.getInternalImageTargetForClickOverride(event)) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+    };
 
     private handleImageHover = (event: MouseEvent) => {
         // Skip hover logic if a scroll-wheel resize is in progress
@@ -272,13 +340,28 @@ export class ImageResizer extends Component {
 
         // If we already have an active image and the hover is within its container, avoid cleanup/recreate thrash
         const activeContainer = this.activeImage?.matchParent(".image-resize-container") as HTMLElement | null;
+        const activeWrapper = activeContainer?.parentElement;
+        const resolvedImageTarget = target instanceof HTMLElement ? this.resolveImageTarget(target) : null;
 
         // Early exit: Not an image or a resize handle?
         if (!target.instanceOf(HTMLImageElement) && !target.hasClass('image-resize-handle')) {
-            if (activeContainer && activeContainer.contains(target)) {
-                // Still within the same container; keep handles
+            if (
+                activeContainer &&
+                (activeContainer.contains(target) || (activeWrapper?.contains(target) ?? false))
+            ) {
+                // Still within the same image wrapper; keep handles
                 return;
             }
+
+            if (resolvedImageTarget && !this.isExternalLink(resolvedImageTarget.src)) {
+                if (this.activeImage === resolvedImageTarget && this.handles.length > 0) {
+                    return;
+                }
+                this.activeImage = resolvedImageTarget;
+                this.createHandles(resolvedImageTarget);
+                return;
+            }
+
             this.cleanupHandles();
             return;
         }
@@ -1284,6 +1367,74 @@ export class ImageResizer extends Component {
         if (newCursorPos && !this.areEditorPositionsEqual(cursorPos, newCursorPos)) {
             editor.setCursor(newCursorPos);
         }
+    }
+
+    private getCursorPositionForImageClick(image: HTMLImageElement, event: MouseEvent): EditorPosition | null {
+        if (!this.editor) return null;
+
+        const { editor } = this;
+        const imageName = this.getImageName(image);
+        const anchorPosition = typeof editor.posAtMouse === "function"
+            ? editor.posAtMouse(event) ?? editor.getCursor()
+            : editor.getCursor();
+
+        if (!imageName) {
+            return anchorPosition;
+        }
+
+        const normalizedTargetName = this.isBase64Image(imageName) ? imageName : this.getFilenameFromPath(imageName);
+        const candidates: Array<{ line: number; startCh: number; endCh: number }> = [];
+
+        editor.getValue()
+            .split('\n')
+            .forEach((lineContent, line) => {
+                if (this.isFrontmatter(line, editor)) return;
+
+                this.findAllMatches(lineContent)
+                    .filter((match) => {
+                        const matchFilename = this.isBase64Image(match.path) ? match.path : this.getFilenameFromPath(match.path);
+                        return matchFilename === normalizedTargetName;
+                    })
+                    .forEach((match) => {
+                        candidates.push({
+                            line,
+                            startCh: match.index,
+                            endCh: match.index + match.fullMatch.length,
+                        });
+                    });
+            });
+
+        if (candidates.length === 0) {
+            return anchorPosition;
+        }
+
+        const bestCandidate = candidates.reduce((best, candidate) => {
+            const bestScore = this.getImageClickCandidateScore(best, anchorPosition);
+            const candidateScore = this.getImageClickCandidateScore(candidate, anchorPosition);
+            return candidateScore < bestScore ? candidate : best;
+        });
+
+        const cursorLocation = this.plugin.settings.dropPasteCursorLocation ?? "back";
+        return cursorLocation === "front"
+            ? { line: bestCandidate.line, ch: bestCandidate.startCh }
+            : { line: bestCandidate.line, ch: bestCandidate.endCh };
+    }
+
+    private getImageClickCandidateScore(
+        candidate: { line: number; startCh: number; endCh: number },
+        anchorPosition: EditorPosition
+    ): number {
+        const lineDistance = Math.abs(candidate.line - anchorPosition.line);
+        if (lineDistance === 0 && anchorPosition.ch >= candidate.startCh && anchorPosition.ch <= candidate.endCh) {
+            return 0;
+        }
+
+        const chDistance = Math.min(
+            Math.abs(anchorPosition.ch - candidate.startCh),
+            Math.abs(anchorPosition.ch - candidate.endCh)
+        );
+
+        return lineDistance * 10000 + chDistance;
     }
 
     // Helper function to compare EditorPositions
