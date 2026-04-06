@@ -4,6 +4,7 @@ import ImageConverterPlugin from "./main";
 import { OutputFormat, ResizeMode, EnlargeReduce } from "./ImageConverterSettings";
 import { ENCODER_CONFIGS, ImageProcessor } from "./ImageProcessor";
 import { findFfmpegExecutablePath, normalizeExecutablePath } from "./utils/ffmpegPath";
+import { addInfoIcon } from "./utils/settingInfo";
 
 export interface SingleImageModalSettings {
     conversionPresetName: string;
@@ -188,8 +189,8 @@ export class ProcessSingleImageModal extends Modal {
 
         if (this.modalSettings.outputFormat === "PNGQUANT") {
             new Setting(this.conversionSettingsContainer)
-                .setName("Executable path for pngquant 🛈")
-                .setTooltip("Provide full-path to the binary file. It can be inside vault or anywhere in your file system.")
+                .setName("Executable path for pngquant")
+                .then((setting) => addInfoIcon(setting, "Provide full-path to the binary file. It can be inside vault or anywhere in your file system."))
                 .addText(text => {
                     text.setValue(this.modalSettings.pngquantExecutablePath)
                         .onChange(async value => {
@@ -203,11 +204,8 @@ export class ProcessSingleImageModal extends Modal {
                 });
 
             new Setting(this.conversionSettingsContainer)
-                .setName("Quality min-max range 🛈")
-                .setTooltip(
-                    // eslint-disable-next-line obsidianmd/ui/sentence-case
-                    "Instructs pngquant to use the least amount of colors required to meet or exceed the max quality. min and max are numbers in range 0 (worst) to 100 (perfect)."
-                )
+                .setName("Quality min-max range")
+                .then((setting) => addInfoIcon(setting, "Instructs pngquant to use the least amount of colors required to meet or exceed the max quality. min and max are numbers in range 0 (worst) to 100 (perfect)."))
                 .addText(text => {
                     text.setValue(this.modalSettings.pngquantQuality)
                         .onChange(async value => {
@@ -346,8 +344,8 @@ export class ProcessSingleImageModal extends Modal {
 
             new Setting(this.conversionSettingsContainer)
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                .setName("FFmpeg executable path 🛈")
-                .setTooltip("Provide full-path to the binary file. It can be inside vault or anywhere in your file system.")
+                .setName("FFmpeg executable path")
+                .then((setting) => addInfoIcon(setting, "Provide full-path to the binary file. It can be inside vault or anywhere in your file system."))
                 .addButton(button => {
                     button
                         .setIcon("search")

@@ -16,8 +16,10 @@ import { NonDestructiveResizeSettings, NonDestructiveResizePreset, ResizeDimensi
 import { ToolPreset } from "./ImageAnnotation";
 import { SingleImageModalSettings } from './ProcessSingleImageModal';
 import { findFfmpegExecutablePath, normalizeExecutablePath } from "./utils/ffmpegPath";
+import { addInfoIcon } from "./utils/settingInfo";
 
 import Sortable from "sortablejs";
+
 
 // --- Typedefs and Interfaces ---
 export type ModalBehavior = "always" | "never" | "ask";
@@ -573,8 +575,8 @@ export class ImageConverterSettingTab extends PluginSettingTab {
         this.renderImageCaptionSettingsSection(containerEl);
 
         new Setting(containerEl)
-            .setName("Right-click menu 🛈")
-            .setTooltip("Enable to show a right-click context menu.")
+            .setName("Right-click menu")
+            .then((setting) => addInfoIcon(setting, "Enable to show a right-click context menu."))
             .addToggle((toggle) =>
                 toggle
                     .setValue(this.plugin.settings.enableContextMenu)
@@ -590,8 +592,8 @@ export class ImageConverterSettingTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
-            .setName("Cursor position after drop/paste 🛈")
-            .setTooltip("Where to place the cursor after dropping or pasting the image")
+            .setName("Cursor position after drop/paste")
+            .then((setting) => addInfoIcon(setting, "Where to place the cursor after dropping or pasting the image"))
             .addDropdown((dropdown) => {
                 dropdown
                     .addOption("front", "At the front of the link")
@@ -605,10 +607,8 @@ export class ImageConverterSettingTab extends PluginSettingTab {
 
 
         new Setting(containerEl)
-            .setName("Never process these filenames 🛈")
-            .setTooltip(
-                "A comma-separated list of file names or patterns that the plugin should never process. Supports glob (*) and regex (enclosed in `/` or `r/` or `regex:`). E.g., `old.png, /^_/, r/temp-.*\\.jpg$/` . Or simply skip all cat images e.g.: /cat/ or all gif images *.gif"
-            )
+            .setName("Never process these filenames")
+            .then((setting) => addInfoIcon(setting, "A comma-separated list of file names or patterns that the plugin should never process. Supports glob (*) and regex (enclosed in `/` or `r/` or `regex:`). E.g., `old.png, /^_/, r/temp-.*\\.jpg$/` . Or simply skip all cat images e.g.: /cat/ or all gif images *.gif"))
             .addTextArea((text) => {
                 text.setValue(this.plugin.settings.neverProcessFilenames)
                     .onChange(async (value) => {
@@ -619,8 +619,8 @@ export class ImageConverterSettingTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName('Show notification for image size changes 🛈')
-            .setTooltip('Display a notification showing how much space was saved after processing an image.')
+            .setName('Show notification for image size changes')
+            .then((setting) => addInfoIcon(setting, 'Display a notification showing how much space was saved after processing an image.'))
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.showSpaceSavedNotification)
                 .onChange(async (value) => {
@@ -868,15 +868,15 @@ export class ImageConverterSettingTab extends PluginSettingTab {
 
             // --- Cache Location Setting ---
             new Setting(imageAlignmentSection)
-                .setName("Image alignment cache location 🛈")
+                .setName("Image alignment cache location")
                 .setDesc(
                     "Choose where to store the cache file for image alignments. " +
                     "Note: App reload required."
                 )
-                .setTooltip(
-                    "If you use Obsidian Sync, it is strongly recommended to use the SAME location on all your devices to ensure consistent behavior. " +
-                    "Default: Obsidian's config folder (syncable)."
-                )
+                .then((setting) => addInfoIcon(
+                    setting,
+                    "If you use Obsidian Sync, it is strongly recommended to use the SAME location on all your devices to ensure consistent behavior. Default: Obsidian's config folder (syncable)."
+                ))
                 .addDropdown(dropdown => dropdown
                     .addOptions({
                         config: "Within config folder (syncable)",
@@ -978,9 +978,9 @@ export class ImageConverterSettingTab extends PluginSettingTab {
         if (this.plugin.settings.isImageResizeEnbaled) { // Conditionally render cleanup options
             // --- Checkboxes for Drag and Scroll Resize ---
             new Setting(imageDragResizeSection)
-                .setName("Enable drag resize 🛈")
+                .setName("Enable drag resize")
                 .setDesc("Allow resizing images by dragging edges of the image.")
-                .setTooltip("This creates a new <DIV> under the image to show resizing HANDLES. But this might cause some incompatibility with certain themes and cause images to jump around.")
+                .then((setting) => addInfoIcon(setting, "This creates a new <DIV> under the image to show resizing HANDLES. But this might cause some incompatibility with certain themes and cause images to jump around."))
                 .addToggle((toggle) =>
                     toggle
                         .setValue(this.plugin.settings.isDragResizeEnabled)
@@ -1057,7 +1057,8 @@ export class ImageConverterSettingTab extends PluginSettingTab {
             }
 
             new Setting(imageDragResizeSection)
-                .setName("Disable Obsidian image selection on click 🛈")
+                .setName("Disable Obsidian image selection on click")
+                .then((setting) => addInfoIcon(setting, "Keep focus in the editor when clicking an internal image in live preview instead of showing Obsidian's default outline/resize corner. Cursor placement follows the drop/paste cursor position setting."))
                 .setDesc("Keep focus in the editor when clicking an internal image in live preview instead of showing Obsidian's default outline/resize corner. Cursor placement follows the drop/paste cursor position setting.")
                 .addToggle((toggle) =>
                     toggle
@@ -1070,9 +1071,9 @@ export class ImageConverterSettingTab extends PluginSettingTab {
 
             // New Setting: Resize Cursor Location
             new Setting(imageDragResizeSection)
-                .setName("Cursor position during resize 🛈")
+                .setName("Cursor position during resize")
                 // eslint-disable-next-line obsidianmd/ui/sentence-case -- Intentional messaging style
-                .setTooltip("Where to place the cursor when resizing an image. Note: 'don't move cursor' - will try to keep your exisiting cursor in place but if you DRAG-RESIZE and cursor is still over the image when you finish resizing, it will get the text selected.")
+                .then((setting) => addInfoIcon(setting, "Where to place the cursor when resizing an image. Note: 'don't move cursor' - will try to keep your exisiting cursor in place but if you DRAG-RESIZE and cursor is still over the image when you finish resizing, it will get the text selected."))
                 .addDropdown((dropdown) => {
                     dropdown
                         .addOption("front", "At the front of the link")
@@ -2253,8 +2254,8 @@ export class ImageConverterSettingTab extends PluginSettingTab {
         // Insert PNGQUANT settings after Output Format
         if (preset.outputFormat === "PNGQUANT") {
             const executablePathSetting = new Setting(containerEl)
-                .setName("Executable path for pngquant 🛈")
-                .setTooltip("Provide full-path to the binary file. It can be inside vault or anywhere in your file system.")
+                .setName("Executable path for pngquant")
+                .then((setting) => addInfoIcon(setting, "Provide full-path to the binary file. It can be inside vault or anywhere in your file system."))
                 .setClass("image-converter-pngquant-executable-path") // Add class for easy selection
                 .addText((text) => {
                     text.setValue(preset.pngquantExecutablePath || "")
@@ -2337,8 +2338,8 @@ export class ImageConverterSettingTab extends PluginSettingTab {
 
             const executablePathSetting = new Setting(containerEl)
                 // eslint-disable-next-line obsidianmd/ui/sentence-case -- Product name
-                .setName("FFmpeg executable path 🛈")
-                .setTooltip("Provide full-path to the binary file. It can be inside vault or anywhere in your file system.")
+                .setName("FFmpeg executable path")
+                .then((setting) => addInfoIcon(setting, "Provide full-path to the binary file. It can be inside vault or anywhere in your file system."))
                 .setClass("image-converter-ffmpeg-executable-path")
                 .addButton(button => {
                     button

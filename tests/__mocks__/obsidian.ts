@@ -539,6 +539,10 @@ export function setIcon(_el: HTMLElement, _icon: string): void {
   // Mock implementation
 }
 
+export function setTooltip(el: HTMLElement, tooltip: string): void {
+  el.setAttribute('aria-label', tooltip);
+}
+
 export function getIcon(_name: string): string | null {
   return null;
 }

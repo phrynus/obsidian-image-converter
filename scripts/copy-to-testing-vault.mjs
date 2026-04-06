@@ -1,9 +1,7 @@
 import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-
-const DEFAULT_PLUGINS_DIR =
-	"C:\\Users\\daniel\\Developer\\Obsidian Plugins\\Plugin-Testing-Vault\\.obsidian\\plugins";
 
 function parseArgs(argv) {
 	const args = {};
@@ -26,10 +24,63 @@ async function pathExists(filePath) {
 	}
 }
 
+function expandHomeDir(filePath) {
+	if (typeof filePath !== "string" || filePath.trim() === "") {
+		return filePath;
+	}
+
+	if (filePath === "~") {
+		return os.homedir();
+	}
+
+	if (filePath.startsWith("~/") || filePath.startsWith("~\\")) {
+		return path.join(os.homedir(), filePath.slice(2));
+	}
+
+	return filePath;
+}
+
+function getDefaultPluginsDirCandidates() {
+	const homeDir = os.homedir();
+
+	const windowsFirstCandidates = [
+		path.join(homeDir, "Developer", "Obsidian Plugins", "Plugin-Testing-Vault", ".obsidian", "plugins"),
+		path.join(homeDir, "Developer", "Obsidian Plugins", "plugin-testing-vault", ".obsidian", "plugins"),
+		path.join(homeDir, "Developer", "Projects", "Obsidian Plugins", "Plugin-Testing-Vault", ".obsidian", "plugins"),
+		path.join(homeDir, "Developer", "Projects", "Obsidian Plugins", "plugin-testing-vault", ".obsidian", "plugins"),
+	];
+
+	const unixFirstCandidates = [
+		path.join(homeDir, "Developer", "Projects", "Obsidian Plugins", "plugin-testing-vault", ".obsidian", "plugins"),
+		path.join(homeDir, "Developer", "Projects", "Obsidian Plugins", "Plugin-Testing-Vault", ".obsidian", "plugins"),
+		path.join(homeDir, "Developer", "Obsidian Plugins", "plugin-testing-vault", ".obsidian", "plugins"),
+		path.join(homeDir, "Developer", "Obsidian Plugins", "Plugin-Testing-Vault", ".obsidian", "plugins"),
+	];
+
+	const candidates = process.platform === "win32" ? windowsFirstCandidates : unixFirstCandidates;
+	return [...new Set(candidates)];
+}
+
+async function resolvePluginsDir(args) {
+	const explicitPluginsDir = args.pluginsDir ?? process.env.OBSIDIAN_PLUGINS_DIR;
+
+	if (typeof explicitPluginsDir === "string" && explicitPluginsDir.trim() !== "") {
+		return path.resolve(expandHomeDir(explicitPluginsDir));
+	}
+
+	const candidates = getDefaultPluginsDirCandidates().map((candidate) => path.resolve(candidate));
+	for (const candidate of candidates) {
+		if (await pathExists(candidate)) {
+			return candidate;
+		}
+	}
+
+	return candidates[0];
+}
+
 async function main() {
 	const args = parseArgs(process.argv.slice(2));
-	const pluginsDir =
-		args.pluginsDir ?? process.env.OBSIDIAN_PLUGINS_DIR ?? DEFAULT_PLUGINS_DIR;
+	const pluginsDir = await resolvePluginsDir(args);
 
 	const repoRoot = process.cwd();
 	const buildDir = path.join(repoRoot, "build");
@@ -56,7 +107,7 @@ async function main() {
 		);
 	}
 
-	// Ensure the parent exists.
+	// Ensure the plugins folder exists, even on a fresh machine / vault setup.
 	await fs.mkdir(pluginsDir, { recursive: true });
 
 	// Always recreate the plugin folder so we never keep stale files (e.g. old data.json).
