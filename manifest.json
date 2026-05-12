@@ -1,9 +1,9 @@
 {
   "id": "image-converter",
-  "name": "Image Converter",
+  "name": "图片转换器",
   "version": "1.4.3",
   "minAppVersion": "0.15.0",
-  "description": "Convert, compress, resize, annotate, markup, draw, crop, rotate, flip, align images directly in Obsidian. Drag-resize, rename with variables, batch process. WEBP, JPG, PNG, HEIC, TIF.",
+  "description": "在 Obsidian 中直接转换、压缩、缩放、标注、标记、绘图、裁剪、旋转、翻转、对齐图片。拖拽调整大小，使用变量重命名，批量处理。支持 WEBP、JPG、PNG、HEIC、TIF。",
   "author": "xRyul",
   "authorUrl": "https://github.com/xryul",
   "isDesktopOnly": false,

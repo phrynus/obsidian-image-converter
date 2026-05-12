@@ -105,7 +105,7 @@ export class BatchImageProcessor {
 
             // If no images found at all
             if (linkedFiles.length === 0) {
-                new Notice('No images found in the note.');
+                new Notice('笔记中未找到图片。');
                 return;
             }
 
@@ -118,16 +118,16 @@ export class BatchImageProcessor {
             // Early return with appropriate message if no processing is needed
             if (allImagesSkippable && noCompression && noResize) {
                 if (isKeepOriginalFormat) {
-                    new Notice('No processing needed: all images are either in skip list or kept in original format with no compression or resizing.');
+                    new Notice('无需处理：所有图片要么在跳过列表中，要么保持原格式且未设置压缩或缩放。');
                 } else {
-                    new Notice(`No processing needed: All images are either in skip list or already in ${targetFormat.toUpperCase()} format with no compression or resizing.`);
+                    new Notice(`无需处理：所有图片要么在跳过列表中，要么已经是 ${targetFormat.toUpperCase()} 格式且未设置压缩或缩放。`);
                 }
                 return;
             }
 
             // Early return if no processing is needed
             if (isKeepOriginalFormat && noCompression && noResize) {
-                new Notice('No processing needed: original format selected with no compression or resizing.');
+                new Notice('无需处理：选择了原格式且未设置压缩或缩放。');
                 return;
             }
 
@@ -138,9 +138,9 @@ export class BatchImageProcessor {
 
             if (filesToProcess.length === 0) {
                 if (processCurrentNoteSkipImagesInTargetFormat) {
-                    new Notice(`No processing needed: All images are already in ${isKeepOriginalFormat ? 'their original' : targetFormat.toUpperCase()} format.`);
+                    new Notice(`无需处理：所有图片已经是 ${isKeepOriginalFormat ? '原格式' : targetFormat.toUpperCase()} 格式。`);
                 } else {
-                    new Notice('No images found that need processing.');
+                    new Notice('未找到需要处理的图片。');
                 }
                 return;
             }
@@ -202,7 +202,7 @@ export class BatchImageProcessor {
                         }
                     }
                 } catch (error) {
-                    console.error('Error processing image in current note:', error);
+                    console.error('处理图片时出错： in current note:', error);
 
                     // If we renamed but did not successfully write, revert rename to avoid breaking existing links.
                     if (didRename && !didWrite) {
@@ -213,7 +213,7 @@ export class BatchImageProcessor {
                         }
                     }
 
-                    new Notice(`Error processing image "${linkedFile.name}": ${this.getErrorMessage(error)}`);
+                    new Notice(`处理图片时出错： "${linkedFile.name}": ${this.getErrorMessage(error)}`);
                 } finally {
                     const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
                     statusBarItemEl.setText(
@@ -229,8 +229,8 @@ export class BatchImageProcessor {
             }, 5000);
 
         } catch (error) {
-            console.error('Error processing images in current note:', error);
-            new Notice(`Error processing images: ${this.getErrorMessage(error)}`);
+            console.error('处理图片时出错：s in current note:', error);
+            new Notice(`处理图片时出错：s: ${this.getErrorMessage(error)}`);
         }
     }
 
@@ -277,7 +277,7 @@ export class BatchImageProcessor {
         try {
             const folder = this.app.vault.getAbstractFileByPath(folderPath);
             if (!(folder instanceof TFolder)) {
-                new Notice('Error: invalid folder path.');
+                new Notice('错误：无效的文件夹路径。');
                 return;
             }
 
@@ -308,7 +308,7 @@ export class BatchImageProcessor {
 
             const images = this.getImageFiles(folder, recursive);
             if (images.length === 0) {
-                new Notice('No images found in the folder.');
+                new Notice('文件夹中未找到图片。');
                 return;
             }
 
@@ -318,7 +318,7 @@ export class BatchImageProcessor {
             );
 
             if (filesToProcess.length === 0) {
-                new Notice('No images found that need processing.');
+                new Notice('未找到需要处理的图片。');
                 return;
             }
 
@@ -368,7 +368,7 @@ export class BatchImageProcessor {
 
                     // No need to update links in notes when processing a whole folder (DIRECT mode)
                 } catch (error) {
-                    console.error('Error processing image in folder:', error);
+                    console.error('处理图片时出错： in folder:', error);
 
                     if (didRename && !didWrite) {
                         try {
@@ -378,7 +378,7 @@ export class BatchImageProcessor {
                         }
                     }
 
-                    new Notice(`Error processing image "${image.name}": ${this.getErrorMessage(error)}`);
+                    new Notice(`处理图片时出错： "${image.name}": ${this.getErrorMessage(error)}`);
                 } finally {
                     const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
                     statusBarItemEl.setText(
@@ -394,8 +394,8 @@ export class BatchImageProcessor {
             }, 5000);
 
         } catch (error) {
-            console.error('Error processing images in folder:', error);
-            new Notice(`Error processing images: ${this.getErrorMessage(error)}`);
+            console.error('处理图片时出错：s in folder:', error);
+            new Notice(`处理图片时出错：s: ${this.getErrorMessage(error)}`);
         }
     }
 
@@ -403,7 +403,7 @@ export class BatchImageProcessor {
         try {
             const folder = this.app.vault.getAbstractFileByPath(folderPath);
             if (!(folder instanceof TFolder)) {
-                new Notice('Error: invalid folder path.');
+                new Notice('错误：无效的文件夹路径。');
                 return;
             }
 
@@ -479,7 +479,7 @@ export class BatchImageProcessor {
             const linkedImages = Array.from(imageMap.values());
 
             if (linkedImages.length === 0) {
-                new Notice('No images found in the folder.');
+                new Notice('文件夹中未找到图片。');
                 return;
             }
 
@@ -488,7 +488,7 @@ export class BatchImageProcessor {
             );
 
             if (filesToProcess.length === 0) {
-                new Notice('No images found that need processing.');
+                new Notice('未找到需要处理的图片。');
                 return;
             }
 
@@ -575,7 +575,7 @@ export class BatchImageProcessor {
                         }
                     }
 
-                    new Notice(`Error processing image "${image.name}": ${this.getErrorMessage(error)}`);
+                    new Notice(`处理图片时出错： "${image.name}": ${this.getErrorMessage(error)}`);
                 } finally {
                     const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
                     statusBarItemEl.setText(`Processing image ${imageCount} of ${totalImages}, elapsed time: ${elapsedTime} seconds`);
@@ -587,7 +587,7 @@ export class BatchImageProcessor {
             window.setTimeout(() => { statusBarItemEl.remove(); }, 5000);
         } catch (error) {
             console.error('Error processing linked images in folder:', error);
-            new Notice(`Error processing images: ${this.getErrorMessage(error)}`);
+            new Notice(`处理图片时出错：s: ${this.getErrorMessage(error)}`);
         }
     }
 
@@ -657,7 +657,7 @@ export class BatchImageProcessor {
 
             // If no images found at all
             if (imageFiles.length === 0) {
-                new Notice('No images found in the vault.');
+                new Notice('仓库中未找到图片。');
                 return;
             }
 
@@ -672,7 +672,7 @@ export class BatchImageProcessor {
                 if (isKeepOriginalFormat) {
                     new Notice('No processing needed: all vault images are either in skip list or kept in original format with no compression or resizing.');
                 } else {
-                    new Notice(`No processing needed: all vault images are either in skip list or already in ${targetFormat.toUpperCase()} format with no compression or resizing.`);
+                    new Notice(`无需处理：仓库中所有图片要么在跳过列表中，要么已经是 ${targetFormat.toUpperCase()} 格式且未设置压缩或缩放。`);
                 }
                 return;
             }
@@ -684,9 +684,9 @@ export class BatchImageProcessor {
 
             if (filesToProcess.length === 0) {
                 if (skipTargetFormat) {
-                    new Notice(`No processing needed: All vault images are either in ${isKeepOriginalFormat ? 'their original' : targetFormat.toUpperCase()} format or in skip list.`);
+                    new Notice(`无需处理：仓库中所有图片要么是 ${isKeepOriginalFormat ? '原格式' : targetFormat.toUpperCase()} 格式，要么在跳过列表中。`);
                 } else {
-                    new Notice('No images found that need processing.');
+                    new Notice('未找到需要处理的图片。');
                 }
                 return;
             }
@@ -760,7 +760,7 @@ export class BatchImageProcessor {
                         }
                     }
                 } catch (error) {
-                    console.error('Error processing image in vault:', error);
+                    console.error('处理图片时出错： in vault:', error);
 
                     if (didRename && !didWrite) {
                         try {
@@ -770,7 +770,7 @@ export class BatchImageProcessor {
                         }
                     }
 
-                    new Notice(`Error processing image "${image.name}": ${this.getErrorMessage(error)}`);
+                    new Notice(`处理图片时出错： "${image.name}": ${this.getErrorMessage(error)}`);
                 } finally {
                     const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(2);
                     statusBarItemEl.setText(
@@ -788,7 +788,7 @@ export class BatchImageProcessor {
             }, 5000);
         } catch (error) {
             console.error("Error processing images:", error);
-            new Notice(`Error processing images: ${this.getErrorMessage(error)}`);
+            new Notice(`处理图片时出错：s: ${this.getErrorMessage(error)}`);
         }
     }
 

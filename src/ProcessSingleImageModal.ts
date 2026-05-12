@@ -40,7 +40,7 @@ export class ProcessSingleImageModal extends Modal {
         super(app);
         this.imageFile = file;
         this.loadModalSettings();
-        this.titleEl.setText(`Process Image: ${file.name}`);
+        this.titleEl.setText(`处理图片：${file.name}`);
     }
 
     private loadModalSettings() {
@@ -131,16 +131,16 @@ export class ProcessSingleImageModal extends Modal {
 
         new Setting(this.conversionSettingsContainer)
             // eslint-disable-next-line obsidianmd/ui/sentence-case
-            .setName("Output Format")
+            .setName("输出格式")
             .addDropdown(dropdown => {
                 const options: Record<OutputFormat, string> = {
                     "WEBP": "WEBP",
                     "JPEG": "JPEG",
                     "PNG": "PNG",
-                    "ORIGINAL": "Original (Compress)",
-                    "NONE": "None (No Conversion)",
-                    "PNGQUANT": "pngquant (PNG Only)",
-                    "AVIF": "AVIF (via ffmpeg)"
+                    "ORIGINAL": "原格式（压缩）",
+                    "NONE": "无（不转换）",
+                    "PNGQUANT": "pngquant（仅 PNG）",
+                    "AVIF": "AVIF（通过 ffmpeg）"
                 };
                 Object.entries(options).forEach(([key, value]) => {
                     dropdown.addOption(key, value);
@@ -161,7 +161,7 @@ export class ProcessSingleImageModal extends Modal {
 
         if (["WEBP", "JPEG", "ORIGINAL"].includes(this.modalSettings.outputFormat)) {
             new Setting(this.conversionSettingsContainer)
-                .setName("Quality")
+                .setName("质量")
                 .addSlider(slider => {
                     slider.setLimits(1, 100, 1)
                         .setValue(this.modalSettings.quality)
@@ -175,7 +175,7 @@ export class ProcessSingleImageModal extends Modal {
 
         if (this.modalSettings.outputFormat === "PNG") {
             new Setting(this.conversionSettingsContainer)
-                .setName("Color depth")
+                .setName("色彩深度")
                 .addSlider(slider => {
                     slider.setLimits(0, 1, 0.1)
                         .setValue(this.modalSettings.colorDepth)
@@ -189,7 +189,7 @@ export class ProcessSingleImageModal extends Modal {
 
         if (this.modalSettings.outputFormat === "PNGQUANT") {
             new Setting(this.conversionSettingsContainer)
-                .setName("Executable path for pngquant")
+                .setName("pngquant 可执行文件路径")
                 .then((setting) => addInfoIcon(setting, "Provide full-path to the binary file. It can be inside vault or anywhere in your file system."))
                 .addText(text => {
                     text.setValue(this.modalSettings.pngquantExecutablePath)
@@ -204,7 +204,7 @@ export class ProcessSingleImageModal extends Modal {
                 });
 
             new Setting(this.conversionSettingsContainer)
-                .setName("Quality min-max range")
+                .setName("质量最小-最大范围")
                 .then((setting) => addInfoIcon(setting, "Instructs pngquant to use the least amount of colors required to meet or exceed the max quality. min and max are numbers in range 0 (worst) to 100 (perfect)."))
                 .addText(text => {
                     text.setValue(this.modalSettings.pngquantQuality)
@@ -344,26 +344,26 @@ export class ProcessSingleImageModal extends Modal {
 
             new Setting(this.conversionSettingsContainer)
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                .setName("FFmpeg executable path")
+                .setName("FFmpeg 可执行文件路径")
                 .then((setting) => addInfoIcon(setting, "Provide full-path to the binary file. It can be inside vault or anywhere in your file system."))
                 .addButton(button => {
                     button
                         .setIcon("search")
                         // eslint-disable-next-line obsidianmd/ui/sentence-case
-                        .setTooltip("Auto-detect FFmpeg")
+                        .setTooltip("自动检测 FFmpeg")
                         .onClick(async () => {
                             button.setDisabled(true);
                             try {
                                 const detectedPath = await findFfmpegExecutablePath(this.app);
                                 if (!detectedPath) {
                                     // eslint-disable-next-line obsidianmd/ui/sentence-case
-                                    new Notice("FFmpeg not found. Try installing via: Homebrew (macOS), Chocolatey (Windows), or apt/snap (Linux). Then set the path manually.", 8000);
+                                    new Notice("未找到 FFmpeg。请尝试通过 Homebrew (macOS)、Chocolatey (Windows) 或 apt/snap (Linux) 安装，然后手动设置路径。", 8000);
                                     return;
                                 }
                                 updateFfmpegPath(detectedPath);
                                 void this.plugin.saveSettings();
                                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                                new Notice("FFmpeg path detected and saved.", 4000);
+                                new Notice("FFmpeg 路径已检测并保存。", 4000);
                             } catch (error) {
                                 const message = this.getErrorMessage(error);
                                 console.error("FFmpeg auto-detection failed:", message);
@@ -385,22 +385,22 @@ export class ProcessSingleImageModal extends Modal {
                 });
 
             const encoderDetectionSetting = new Setting(this.conversionSettingsContainer)
-                .setName("Encoder detection")
+                .setName("编码器检测")
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
                 .setDesc("Detect and validate working AV1 encoder by running a test encode. This ensures hardware encoders are actually available on your system.")
                 .addButton(button => {
                     encoderDetectionButtonEl = button.buttonEl;
                     button
-                        .setButtonText("Detect encoder")
+                        .setButtonText("检测编码器")
                         .setCta()
                         .onClick(async () => {
                             if (!this.modalSettings.ffmpegExecutablePath) {
                                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                                new Notice("Please specify FFmpeg executable path first");
+                                new Notice("请先指定 FFmpeg 可执行文件路径");
                                 return;
                             }
 
-                            button.setButtonText("Validating...");
+                            button.setButtonText("验证中...");
                             button.setDisabled(true);
 
                             try {
@@ -431,14 +431,14 @@ export class ProcessSingleImageModal extends Modal {
                                     }
 
                                     // eslint-disable-next-line obsidianmd/ui/sentence-case
-                                    new Notice("No working AV1 encoder found. Install FFmpeg with AV1 support.", 5000);
+                                    new Notice("未找到可用的 AV1 编码器。请安装带有 AV1 支持的 FFmpeg。", 5000);
                                     resetEncoderUi();
                                 }
                             } catch (error) {
                                 console.error("Encoder detection error:", error);
                                 new Notice(`Error detecting encoder: ${error instanceof Error ? error.message : String(error)}`);
                             } finally {
-                                button.setButtonText("Detect encoder");
+                                button.setButtonText("检测编码器");
                                 button.setDisabled(false);
                             }
                         });
@@ -475,7 +475,7 @@ export class ProcessSingleImageModal extends Modal {
 
             const presetSetting = new Setting(this.conversionSettingsContainer)
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                .setName("FFmpeg preset")
+                .setName("FFmpeg 预设")
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
                 .setDesc("Encoding preset (speed vs. compression).")
                 .addDropdown(dropdown => {
@@ -520,16 +520,16 @@ export class ProcessSingleImageModal extends Modal {
 
         new Setting(this.resizeSettingsContainer)
             // eslint-disable-next-line obsidianmd/ui/sentence-case
-            .setName("Resize Mode")
+            .setName("缩放模式")
             .addDropdown(dropdown => {
                 const resizeOptions: Record<ResizeMode, string> = {
-                    "None": "None",
-                    "Fit": "Fit",
-                    "Fill": "Fill",
-                    "LongestEdge": "Longest Edge",
-                    "ShortestEdge": "Shortest Edge",
-                    "Width": "Width",
-                    "Height": "Height",
+                    "None": "无",
+                    "Fit": "适应",
+                    "Fill": "填充",
+                    "LongestEdge": "最长边",
+                    "ShortestEdge": "最短边",
+                    "Width": "宽度",
+                    "Height": "高度",
                 };
                 Object.entries(resizeOptions).forEach(([key, value]) => {
                     dropdown.addOption(key, value);
@@ -547,7 +547,7 @@ export class ProcessSingleImageModal extends Modal {
               if (["Fit", "Fill", "Width"].includes(this.modalSettings.resizeMode)){
                 new Setting(this.resizeSettingsContainer)
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                .setName("Desired Width")
+                .setName("期望宽度")
                 .addText(text => {
                     text.setValue(this.modalSettings.desiredWidth.toString())
                         .onChange(async (value) => {
@@ -562,7 +562,7 @@ export class ProcessSingleImageModal extends Modal {
             if (["Fit", "Fill", "Height"].includes(this.modalSettings.resizeMode)) {
                 new Setting(this.resizeSettingsContainer)
                     // eslint-disable-next-line obsidianmd/ui/sentence-case
-                    .setName("Desired Height")
+                    .setName("期望高度")
                     .addText(text => {
                         text.setValue(this.modalSettings.desiredHeight.toString())
                             .onChange(async (value) => {
@@ -577,7 +577,7 @@ export class ProcessSingleImageModal extends Modal {
 
             if (["LongestEdge", "ShortestEdge"].includes(this.modalSettings.resizeMode)) {
                 new Setting(this.resizeSettingsContainer)
-                    .setName(this.modalSettings.resizeMode === "LongestEdge" ? "Desired Longest Edge" : "Desired Shortest Edge")
+                    .setName(this.modalSettings.resizeMode === "LongestEdge" ? "期望最长边" : "期望最短边")
                     .addText(text => {
                         text.setValue(this.modalSettings.desiredLongestEdge.toString())
                             .onChange(async (value) => {
@@ -592,12 +592,12 @@ export class ProcessSingleImageModal extends Modal {
 
             new Setting(this.resizeSettingsContainer)
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                .setName("Enlarge/Reduce")
+                .setName("放大/缩小")
                 .addDropdown(dropdown => {
                     const enlargeReduceOptions: Record<EnlargeReduce, string> = {
-                        "Auto": "Auto",
-                        "Reduce": "Only Reduce",
-                        "Enlarge": "Only Enlarge",
+                        "Auto": "自动",
+                        "Reduce": "仅缩小",
+                        "Enlarge": "仅放大",
                     };
                     Object.entries(enlargeReduceOptions).forEach(([key, value]) => {
                         dropdown.addOption(key, value);
@@ -617,12 +617,12 @@ export class ProcessSingleImageModal extends Modal {
         this.buttonContainer.empty();
         new Setting(this.buttonContainer)
             .addButton(button => {
-                button.setButtonText("Process")
+                button.setButtonText("处理")
                     .setCta()
                     .onClick(() => this.processImage());
             })
             .addButton(button => {
-                button.setButtonText("Cancel")
+                button.setButtonText("取消")
                     .onClick(() => this.close());
             });
     }
@@ -633,12 +633,12 @@ export class ProcessSingleImageModal extends Modal {
         //  Skip preview for PNGQUANT and AVIF
         if (this.modalSettings.outputFormat === "PNGQUANT" || this.modalSettings.outputFormat === "AVIF") {
             this.previewContainer.empty();
-            this.previewContainer.createEl("p", { text: "Preview not available for this format." });
+            this.previewContainer.createEl("p", { text: "此格式不支持预览。" });
             return;
         }
 
         this.previewContainer.empty();
-        const loadingEl = this.previewContainer.createEl("p", { text: "Generating preview..." });
+        const loadingEl = this.previewContainer.createEl("p", { text: "正在生成预览..." });
 
         try {
             const fileBuffer = await this.app.vault.readBinary(this.imageFile);
@@ -681,7 +681,7 @@ export class ProcessSingleImageModal extends Modal {
             loadingEl.remove();
 
         } catch (error) {
-            loadingEl.setText(`Preview failed: ${this.getErrorMessage(error)}`);
+            loadingEl.setText(`预览失败：${this.getErrorMessage(error)}`);
             console.error("Preview generation failed:", error);
         }
     }

@@ -36,7 +36,7 @@ export class NonDestructiveResizeSettings {
     constructor() {
         this.resizePresets = [
             {
-                name: "Default (No Resize)",
+                name: "默认（不缩放）",
                 resizeDimension: "none",
                 resizeScaleMode: "auto",
                 respectEditorMaxWidth: true,
@@ -44,7 +44,7 @@ export class NonDestructiveResizeSettings {
                 resizeUnits: "pixels",
             },
             {
-                name: "Width 500px",
+                name: "宽度 500px",
                 resizeDimension: "width",
                 width: 500,
                 resizeScaleMode: "auto",
@@ -53,7 +53,7 @@ export class NonDestructiveResizeSettings {
                 resizeUnits: "pixels",
             },
             {
-                name: "Height 800px",
+                name: "高度 800px",
                 resizeDimension: "height",
                 height: 800,
                 resizeScaleMode: "auto",
@@ -62,7 +62,7 @@ export class NonDestructiveResizeSettings {
                 resizeUnits: "pixels",
             },
             {
-                name: "50% Width",
+                name: "50% 宽度",
                 resizeDimension: "width",
                 width: 50,
                 resizeScaleMode: "auto",
@@ -71,7 +71,7 @@ export class NonDestructiveResizeSettings {
                 resizeUnits: "percentage",
             },
             {
-                name: "Longest Edge 1000px",
+                name: "最长边 1000px",
                 resizeDimension: "longest-edge",
                 longestEdge: 1000,
                 resizeScaleMode: "auto",
@@ -80,7 +80,7 @@ export class NonDestructiveResizeSettings {
                 resizeUnits: "pixels",
             },
             {
-                name: "Fit Editor",
+                name: "适应编辑器",
                 resizeDimension: "editor-max-width",
                 editorMaxWidthValue: 100,
                 resizeScaleMode: "auto",
@@ -89,7 +89,7 @@ export class NonDestructiveResizeSettings {
                 resizeUnits: "percentage",
             },
             {
-                name: "Original Width",
+                name: "原始宽度",
                 resizeDimension: "original-width",
                 resizeScaleMode: "auto",
                 respectEditorMaxWidth: false,
@@ -97,7 +97,7 @@ export class NonDestructiveResizeSettings {
                 resizeUnits: "pixels",
             },
             {
-                name: "Custom (Distort)",
+                name: "自定义（可变形）",
                 resizeDimension: "both",
                 customValue: "300x100", // Example of potential distortion
                 resizeScaleMode: "auto",

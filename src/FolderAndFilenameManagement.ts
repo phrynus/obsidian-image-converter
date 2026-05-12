@@ -760,7 +760,7 @@ export class FolderAndFilenameManagement {
         } catch (error) {
             console.error('Error during safe rename:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
-            new Notice(`Error renaming file: ${errorMessage}`);
+            new Notice(`重命名文件时出错：${errorMessage}`);
             return false; // Indicate failure
         }
     }

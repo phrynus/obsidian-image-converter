@@ -58,13 +58,13 @@ export class ImageAlignment extends Component {
     addAlignmentOptionsToContextMenu(menu: Menu, img: HTMLImageElement, activeFile: TFile) {
         menu.addItem((item) => {
             item
-                .setTitle('Align image')
+                .setTitle('图片对齐')
                 .setIcon('align-justify')
                 .setSubmenu()
                 .addItem((subItem) => {
                     const currentAlignment = this.getCurrentImageAlignment(img);
                     subItem
-                        .setTitle('Left')
+                        .setTitle('左对齐')
                         .setIcon('align-left')
                         .setChecked(currentAlignment.align === 'left')
                         .onClick(async () => {
@@ -74,7 +74,7 @@ export class ImageAlignment extends Component {
                 .addItem((subItem) => {
                     const currentAlignment = this.getCurrentImageAlignment(img);
                     subItem
-                        .setTitle('Center')
+                        .setTitle('居中')
                         .setIcon('align-center')
                         .setChecked(currentAlignment.align === 'center')
                         .onClick(async () => {
@@ -84,7 +84,7 @@ export class ImageAlignment extends Component {
                 .addItem((subItem) => {
                     const currentAlignment = this.getCurrentImageAlignment(img);
                     subItem
-                        .setTitle('Right')
+                        .setTitle('右对齐')
                         .setIcon('align-right')
                         .setChecked(currentAlignment.align === 'right')
                         .onClick(async () => {
@@ -95,7 +95,7 @@ export class ImageAlignment extends Component {
                 .addItem((subItem) => {
                     const currentAlignment = this.getCurrentImageAlignment(img);
                     subItem
-                        .setTitle('Wrap text')
+                        .setTitle('文字环绕')
                         .setChecked(currentAlignment.wrap)
                         .onClick(async () => {
                             // Default to left alignment if no alignment is set

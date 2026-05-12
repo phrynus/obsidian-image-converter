@@ -63,11 +63,11 @@ export class ProcessCurrentNote extends Modal {
 			cls: "modal-header",
 		});
 		headerContainer.createEl("h2", {
-			text: "Convert, compress and resize",
+			text: "转换、压缩和缩放",
 		});
 
 		headerContainer.createEl("h6", {
-			text: `all images in: ${this.activeFile.basename}.${this.activeFile.extension}`,
+			text: `笔记中所有图片：${this.activeFile.basename}.${this.activeFile.extension}`,
 			cls: "modal-subtitle",
 		});
 
@@ -79,24 +79,24 @@ export class ProcessCurrentNote extends Modal {
 			cls: "image-counts-display",
 		});
 
-		countsDisplay.createEl("span", { text: "Total images found: " });
+		countsDisplay.createEl("span", { text: "共找到图片： " });
 		this.imageCountDisplay = countsDisplay.createEl("span");
 
 		countsDisplay.createEl("br");
 
-		countsDisplay.createEl("span", { text: "To be processed: " });
+		countsDisplay.createEl("span", { text: "待处理： " });
 		this.processedCountDisplay = countsDisplay.createEl("span");
 
 		countsDisplay.createEl("br");
 
-		countsDisplay.createEl("span", { text: "Skipped: " });
+		countsDisplay.createEl("span", { text: "已跳过： " });
 		this.skippedCountDisplay = countsDisplay.createEl("span");
 
 		// Warning message
 		headerContainer.createEl("p", {
 			cls: "modal-warning",
 			 
-			text: "⚠️ This will modify all images in the current note — please ensure you have backups.",
+			text: "⚠️ 这将修改当前笔记中的所有图片——请确保已备份。",
 		});
 
 		// --- Settings Container ---
@@ -111,15 +111,15 @@ export class ProcessCurrentNote extends Modal {
 
 		// Convert To setting
 		this.convertToSetting = new Setting(formatQualityContainer)
-			.setName("Convert to ⓘ ")
-			.setDesc("Choose output format for your images")
+			.setName("转换为 ⓘ ")
+			.setDesc("选择图片的输出格式")
 			.setTooltip(
-				"Same as original: preserves current format while applying compression/resizing",
+				"保持原格式：保留当前格式，同时应用压缩/缩放",
 			)
 			.addDropdown((dropdown) =>
 				dropdown
 					.addOptions({
-						disabled: "Same as original",
+						disabled: "保持原格式",
 						webp: "WebP",
 						jpg: "JPG",
 						png: "PNG",
@@ -135,14 +135,14 @@ export class ProcessCurrentNote extends Modal {
 
 		// Quality setting
 		new Setting(formatQualityContainer)
-			.setName("Quality ⓘ")
-			.setDesc("Compression level (0-100)")
+			.setName("质量 ⓘ")
+			.setDesc("压缩级别 (0-100)")
 			.setTooltip(
-				"100: no compression (original quality)\n75: recommended (good balance)\n0-50: high compression (lower quality)",
+				"100：无压缩（原始质量）\n75：推荐（良好平衡）\n0-50：高压缩（较低质量）",
 			)
 			.addText((text) =>
 				text
-					.setPlaceholder("Enter quality (0-100)")
+					.setPlaceholder("输入质量 (0-100)")
 					.setValue(
 						(
 							this.plugin.settings.ProcessCurrentNotequality * 100
@@ -169,24 +169,24 @@ export class ProcessCurrentNote extends Modal {
 
 		// Resize Mode setting
 		this.resizeModeSetting = new Setting(resizeContainer)
-			.setName("Resize mode ⓘ")
+			.setName("缩放模式 ⓘ")
 			.setDesc(
-				"Choose how images should be resized - results are permanent.",
+				"选择图片的缩放方式——结果不可逆。",
 			)
 			 
 			.setTooltip(
-				"Fit: maintains aspect ratio within dimensions\nFill: exactly matches dimensions\nLongest edge: limits the longest side\nShortest edge: limits the shortest side\nWidth/height: constrains single dimension",
+				"适应：在尺寸范围内保持宽高比\n填充：精确匹配尺寸\n最长边：限制最长边\n最短边：限制最短边\n宽度/高度：约束单个维度",
 			)
 			.addDropdown((dropdown) =>
 				dropdown
 					.addOptions({
-						None: "None",
-						LongestEdge: "Longest edge",
-						ShortestEdge: "Shortest edge",
-						Width: "Width",
-						Height: "Height",
-						Fit: "Fit",
-						Fill: "Fill",
+						None: "无",
+						LongestEdge: "最长边",
+						ShortestEdge: "最短边",
+						Width: "宽度",
+						Height: "高度",
+						Fit: "适应",
+						Fill: "填充",
 					})
 					.setValue(
 						this.plugin.settings
@@ -216,14 +216,14 @@ export class ProcessCurrentNote extends Modal {
 
 		// Skip formats setting
 		this.skipFormatsSetting = new Setting(skipContainer)
-			.setName("Skip file formats ⓘ")
+			.setName("跳过文件格式 ⓘ")
 			.setTooltip(
-				"Comma-separated list of file formats to skip (e.g., tif,tiff,heic). Leave empty to process all formats.",
+				"要跳过的文件格式，逗号分隔列表（例如：tif,tiff,heic）。留空则处理所有格式。",
 			)
 			.addText((text) =>
 				text
 					 
-					.setPlaceholder("e.g., tif, tiff, heic")
+					.setPlaceholder("例如：tif, tiff, heic")
 					.setValue(
 						this.plugin.settings.ProcessCurrentNoteSkipFormats,
 					)
@@ -238,12 +238,12 @@ export class ProcessCurrentNote extends Modal {
 		// Ignore folders setting
 		new Setting(skipContainer)
 			.setClass("image-converter-ignore-folders-setting")
-			.setName("Skip folders ⓘ")
+			.setName("跳过文件夹 ⓘ")
 			.setTooltip(
-				"Comma-separated folder patterns to exclude images from processing.",
+				"逗号分隔的文件夹规则，用于排除图片不处理。",
 			)
 			.addText((text) => {
-				text.setPlaceholder("e.g., _attachments, images/**")
+				text.setPlaceholder("例如：_attachments, images/**")
 					.setValue(
 						this.plugin.settings.ProcessCurrentNoteIgnoreFolders,
 					)
@@ -263,7 +263,7 @@ export class ProcessCurrentNote extends Modal {
 			cls: "image-converter-ignore-folders-help",
 		});
 		helpDetails.createEl("summary", {
-			text: "Show examples and how matching works",
+			text: "显示示例和匹配规则",
 			cls: "image-converter-ignore-folders-help-summary",
 		});
 
@@ -272,30 +272,30 @@ export class ProcessCurrentNote extends Modal {
 		});
 
 		helpContent.createDiv({
-			text: "How matching works:",
+			text: "匹配规则：",
 			attr: { style: "font-weight: bold; margin: 8px 0 4px 0;" },
 		});
 		const behaviorList = helpContent.createEl("ul", {
 			attr: { style: "margin: 4px 0; padding-left: 20px;" },
 		});
 		behaviorList.createEl("li", {
-			text: "Folder paths without wildcards skip that folder and all subfolders",
+			text: "不含通配符的文件夹路径会跳过该文件夹及其所有子文件夹",
 		});
 		behaviorList.createEl("li", {
-			text: "Leading / is optional",
+			text: "前导 / 是可选的",
 		});
 		behaviorList.createEl("li", {
-			text: "Use * to match only direct children",
+			text: "使用 * 仅匹配直接子项",
 		});
 		behaviorList.createEl("li", {
-			text: "Use ** to include subfolders too",
+			text: "使用 ** 同时也包含子文件夹",
 		});
 		behaviorList.createEl("li", {
-			text: "Regex is supported for advanced patterns",
+			text: "支持正则表达式用于高级模式",
 		});
 
 		helpContent.createDiv({
-			text: "Examples:",
+			text: "示例：",
 			attr: { style: "font-weight: bold; margin-bottom: 4px;" },
 		});
 
@@ -303,26 +303,26 @@ export class ProcessCurrentNote extends Modal {
 			attr: { style: "margin: 4px 0 8px 0; padding-left: 20px;" },
 		});
 		examplesList.createEl("li", {
-			text: "_attachments → Skips that folder and everything inside it",
+			text: "_attachments → 跳过该文件夹及其所有内容",
 		});
 		examplesList.createEl("li", {
-			text: "/_attachments → Same as above",
+			text: "/_attachments → 同上",
 		});
 		examplesList.createEl("li", {
-			text: "_attachments/* → Skips only direct children in that folder",
+			text: "_attachments/* → 仅跳过该文件夹的直接子项",
 		});
 		examplesList.createEl("li", {
-			text: "_attachments/** → Skips that folder and all nested subfolders",
+			text: "_attachments/** → 跳过该文件夹及所有嵌套子文件夹",
 		});
 		examplesList.createEl("li", {
-			text: "images/**, assets/** → Skips multiple folder trees",
+			text: "images/**, assets/** → 跳过多个文件夹树",
 		});
 		examplesList.createEl("li", {
-			text: "archive/2025/** → Skips a specific folder tree",
+			text: "archive/2025/** → 跳过特定文件夹树",
 		});
 
 		helpContent.createDiv({
-			text: "Advanced (regex):",
+			text: "高级用法（正则）：",
 			attr: { style: "font-weight: bold; margin-bottom: 4px;" },
 		});
 
@@ -341,9 +341,9 @@ export class ProcessCurrentNote extends Modal {
 
 		// Skip target format setting
 		this.skipTargetFormatSetting = new Setting(skipContainer)
-			.setName("Skip images in target format ⓘ")
+			.setName("跳过目标格式图片 ⓘ")
 			.setTooltip(
-				"If image is already in target format, this allows you to skip its compression, conversion and resizing. Processing of all other formats will be still performed.",
+				"如果图片已是目标格式，可跳过其压缩、转换和缩放。其他格式的图片仍会被处理。",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -372,7 +372,7 @@ export class ProcessCurrentNote extends Modal {
 			cls: "button-container",
 		});
 		this.submitButton = new ButtonComponent(buttonContainer)
-			.setButtonText("Submit")
+			.setButtonText("提交")
 			.onClick(async () => {
 				// Use async here
 				this.close();
@@ -387,7 +387,7 @@ export class ProcessCurrentNote extends Modal {
 				} else {
 					 
 					new Notice(
-						"Error: active file must be a markdown or canvas file.",
+						"错误：活动文件必须是 Markdown 或 Canvas 文件。",
 					);
 				}
 			});
@@ -421,8 +421,8 @@ export class ProcessCurrentNote extends Modal {
 
         this.enlargeReduceSettings = new Setting(this.enlargeReduceDiv)
             .setClass('enlarge-reduce-setting')
-            .setName('Enlarge or reduce ⓘ')
-            .setDesc('Controls how images are adjusted relative to target size:')
+            .setName('放大或缩小 ⓘ')
+            .setDesc('控制图片相对于目标大小的调整方式：')
              
             .setTooltip('• Reduce and enlarge: adjusts all images to fit specified dimensions\n• Reduce only: only shrinks images larger than target\n• Enlarge only: only enlarges images smaller than target')
             .addDropdown((dropdown) => {
@@ -462,13 +462,13 @@ export class ProcessCurrentNote extends Modal {
         let desc = '';
 
         if (['Fit', 'Fill'].includes(resizeMode)) {
-            name = 'Resize dimensions';
-            desc = 'Enter the desired width and height in pixels';
+            name = '缩放尺寸';
+            desc = '输入期望的宽度和高度（像素）';
             this.resizeInputSettings
                 .setName(name)
                 .setDesc(desc)
                 .addText((text: TextComponent) => text
-                    .setPlaceholder('Width')
+                    .setPlaceholder('宽度')
                     .setValue(this.plugin.settings.ProcessCurrentNoteresizeModaldesiredWidth.toString())
                     .onChange(async (value: string) => {
                         const width = parseInt(value);
@@ -478,7 +478,7 @@ export class ProcessCurrentNote extends Modal {
                         }
                     }))
                 .addText((text: TextComponent) => text
-                    .setPlaceholder('Height')
+                    .setPlaceholder('高度')
                     .setValue(this.plugin.settings.ProcessCurrentNoteresizeModaldesiredHeight.toString())
                     .onChange(async (value: string) => {
                         const height = parseInt(value);
@@ -492,15 +492,15 @@ export class ProcessCurrentNote extends Modal {
                 case 'LongestEdge':
                 case 'ShortestEdge':
                     name = `${resizeMode}`;
-                    desc = 'Enter the desired length in pixels';
+                    desc = '输入期望的长度（像素）';
                     break;
                 case 'Width':
-                    name = 'Width';
-                    desc = 'Enter the desired width in pixels';
+                    name = '宽度';
+                    desc = '输入期望的宽度（像素）';
                     break;
                 case 'Height':
-                    name = 'Height';
-                    desc = 'Enter the desired height in pixels';
+                    name = '高度';
+                    desc = '输入期望的高度（像素）';
                     break;
             }
 

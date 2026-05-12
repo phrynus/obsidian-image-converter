@@ -545,7 +545,7 @@ export class LinkFormatter {
 
             img.onerror = (error) => {
                 // console.error(`Failed to load image ${file.name}:`, error);
-                new Notice(`Failed to load image dimensions for ${file.name}`);
+                new Notice(`无法加载 ${file.name} 的图片尺寸`);
                 resolve(null);
             };
 

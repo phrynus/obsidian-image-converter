@@ -135,7 +135,7 @@ export class ImageExporter {
                 canvas.renderAll();
                 canvas.preserveObjectStacking = originalStacking;
                 canvas.requestRenderAll();
-                new Notice('Failed to export image');
+                new Notice('导出图片失败');
                 return false;
             }
 
@@ -144,7 +144,7 @@ export class ImageExporter {
 
             await this.app.vault.modifyBinary(file, arrayBuffer);
 
-            new Notice('Image saved successfully');
+            new Notice('图片保存成功');
 
             await this.refreshActiveView();
 
@@ -154,7 +154,7 @@ export class ImageExporter {
             return true;
         } catch (error) {
             console.error('Save error:', error);
-            new Notice('Error saving image');
+            new Notice('保存图片时出错');
             return false;
         }
     }

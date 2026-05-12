@@ -141,7 +141,7 @@ export class ProcessFolderModal extends Modal {
         const headerContainer = contentEl.createDiv({ cls: "modal-header" });
 
         // Main title
-        headerContainer.createEl("h2", { text: "Convert, compress and resize" });
+        headerContainer.createEl("h2", { text: "转换、压缩和缩放" });
 
         // Subtitle
         headerContainer.createEl("h6", {
@@ -174,13 +174,13 @@ export class ProcessFolderModal extends Modal {
 
         // Function to update the description text
         const updateDescription = (source: ImageSource | null) => {
-            let descText = "No selection."; // Default text
+            let descText = "未选择。"; // Default text
             if (source === ImageSource.DIRECT) {
                 descText =
-                    "Processing images directly in the folder.";
+                    "正在处理文件夹中的直接图片。";
             } else if (source === ImageSource.LINKED) {
                 descText =
-                    "Processing images linked in notes or Canvas files.";
+                    "正在处理笔记或 Canvas 文件中链接的图片。";
             }
             imageSourceDesc.setText(descText);
         };
@@ -191,21 +191,21 @@ export class ProcessFolderModal extends Modal {
         // Set initial description
         updateDescription(this.selectedImageSource);
         // Image Counts
-        countsDisplay.createEl("span", { text: "Total images found: " });
+        countsDisplay.createEl("span", { text: "共找到图片：" });
         this.imageCountDisplay = countsDisplay.createEl("span", {
             text: this.imageCount.toString(),
         });
 
         countsDisplay.createEl("br");
 
-        countsDisplay.createEl("span", { text: "To be skipped: " });
+        countsDisplay.createEl("span", { text: "将跳过：" });
         this.skippedCountDisplay = countsDisplay.createEl("span", {
             text: this.skippedCount.toString(),
         });
 
         countsDisplay.createEl("br");
 
-        countsDisplay.createEl("span", { text: "To be processed: " });
+        countsDisplay.createEl("span", { text: "待处理：" });
         this.processedCountDisplay = countsDisplay.createEl("span", {
             text: this.processedCount.toString(),
         });
@@ -215,12 +215,12 @@ export class ProcessFolderModal extends Modal {
 
     // --- Image Source Settings with Radio Buttons ---
     private createImageSourceSettings(contentEl: HTMLElement) {
-        contentEl.createEl("h4", { text: "Image source" }); // Heading for Image Source
+        contentEl.createEl("h4", { text: "图片来源" }); // Heading for Image Source
 
         // --- Recursive Setting ---
         new Setting(contentEl)
-            .setName("Recursive")
-            .setDesc("Process images in all subfolders as well")
+            .setName("递归")
+            .setDesc("同时处理所有子文件夹中的图片")
             .addToggle((toggle) =>
                 toggle.setValue(this.recursive).onChange(async (value) => {
                     this.recursive = value;
@@ -251,8 +251,8 @@ export class ProcessFolderModal extends Modal {
 
         // --- Create Radio Buttons ---
         new Setting(imageSourceSettingContainer)
-            .setName("Direct images")
-            .setDesc("Images directly in the folder")
+            .setName("直接图片")
+            .setDesc("文件夹中的直接图片")
             .addExtraButton((button) => {
                 buttonRefs[ImageSource.DIRECT] = button;
                 button
@@ -279,9 +279,9 @@ export class ProcessFolderModal extends Modal {
             });
 
         new Setting(imageSourceSettingContainer)
-            .setName("Linked images")
+            .setName("链接的图片")
             // eslint-disable-next-line obsidianmd/ui/sentence-case
-            .setDesc("Images linked in notes or Canvas")
+            .setDesc("笔记或 Canvas 中链接的图片")
             .addExtraButton((button) => {
                 buttonRefs[ImageSource.LINKED] = button;
                 button
@@ -319,17 +319,17 @@ export class ProcessFolderModal extends Modal {
 
     // --- General Settings ---
     private async createGeneralSettings(contentEl: HTMLElement) {
-        contentEl.createEl("h4", { text: "General" }); // Heading for General Settings
+        contentEl.createEl("h4", { text: "常规" }); // Heading for General Settings
 
         // --- Convert To Setting ---
         this.convertToSetting = new Setting(contentEl)
-            .setName("Convert to ⓘ")
+            .setName("转换为 ⓘ")
             .setDesc(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                "Choose output format. 'Same as original' applies compression/resizing to current format."
+                "Choose output format. '保持原格式' applies compression/resizing to current format."
             )
             .setTooltip(
-                "Same as original: preserves current format while applying compression/resizing"
+                "保持原格式：保留当前格式，同时应用压缩/缩放"
             )
             .addDropdown((dropdown) => {
                 dropdown
@@ -349,15 +349,15 @@ export class ProcessFolderModal extends Modal {
 
         // --- Quality Setting ---
         this.qualitySetting = new Setting(contentEl)
-            .setName("Quality ⓘ")
-            .setDesc("Compression level (0-100)")
+            .setName("质量 ⓘ")
+            .setDesc("压缩级别 (0-100)")
             .setTooltip(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
                 "100: No compression (original quality)\n75: Recommended (good balance)\n0-50: High compression (lower quality)"
             )
             .addText((text) => {
                 text
-                    .setPlaceholder("Enter quality (0-100)")
+                    .setPlaceholder("输入质量 (0-100)")
                     .setValue(
                         (
                             this.plugin.settings.ProcessCurrentNotequality * 100
@@ -383,17 +383,17 @@ export class ProcessFolderModal extends Modal {
     }
 
     private createSkipSettings(contentEl: HTMLElement): void {
-        contentEl.createEl("h4", { text: "Skip" }); // Heading for Resize Settings
+        contentEl.createEl("h4", { text: "跳过" }); // Heading for Resize Settings
 
         // --- Skip Formats Setting ---
         this.skipFormatsSetting = new Setting(contentEl)
-            .setName("Skip formats ⓘ")
+            .setName("跳过格式 ⓘ")
             .setDesc(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
                 "Comma-separated list (no dots or spaces, e.g., png,gif)."
             )
             .setTooltip(
-                "Comma-separated list of file formats to skip (e.g., tif,tiff,heic). Leave empty to process all formats."
+                "要跳过的文件格式，逗号分隔列表（例如：tif,tiff,heic）。留空则处理所有格式。"
             )
             .addText((text) => {
                 text
@@ -412,12 +412,12 @@ export class ProcessFolderModal extends Modal {
 
         // --- Skip Target Format Setting ---
         this.skipTargetFormatSetting = new Setting(contentEl)
-            .setName("Skip images in target format ⓘ")
+            .setName("跳过目标格式图片 ⓘ")
             .setDesc(
-                "Skip compression/resizing if image is already in target format."
+                "如果图片已是目标格式，则跳过压缩/缩放。"
             )
             .setTooltip(
-                "If image is already in target format, this allows you to skip its compression, conversion and resizing. Processing of all other formats will be still performed."
+                "如果图片已是目标格式，可跳过其压缩、转换和缩放。其他格式的图片仍会被处理。"
             )
             .addToggle((toggle) => {
                 toggle
@@ -435,14 +435,14 @@ export class ProcessFolderModal extends Modal {
 
     // --- Resize Settings ---
     private async createResizeSettings(contentEl: HTMLElement) {
-        contentEl.createEl("h4", { text: "Resize" }); // Heading for Resize Settings
+        contentEl.createEl("h4", { text: "缩放" }); // Heading for Resize Settings
 
         // --- Resize Mode Setting ---
         this.resizeModeSetting = new Setting(contentEl)
-            .setName("Resize mode ⓘ")
+            .setName("缩放模式 ⓘ")
             .setDesc(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                "Choose how images should be resized. Note: Results are permanent"
+                "选择图片的缩放方式。注意：结果不可逆"
             )
             .setTooltip(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
@@ -451,13 +451,13 @@ export class ProcessFolderModal extends Modal {
             .addDropdown((dropdown) => {
                 dropdown
                     .addOptions({
-                        None: "None",
-                        Fit: "Fit (maintain aspect ratio within dimensions)",
-                        Fill: "Fill (exactly match dimensions)",
-                        LongestEdge: "Longest edge",
-                        ShortestEdge: "Shortest edge",
-                        Width: "Width",
-                        Height: "Height",
+                        None: "无",
+                        Fit: "适应（在尺寸范围内保持宽高比）",
+                        Fill: "填充（精确匹配尺寸）",
+                        LongestEdge: "最长边",
+                        ShortestEdge: "最短边",
+                        Width: "宽度",
+                        Height: "高度",
                     })
                     .setValue(
                         this.plugin.settings
@@ -492,7 +492,7 @@ export class ProcessFolderModal extends Modal {
     private createProcessButton(contentEl: HTMLElement) {
         const buttonContainer = contentEl.createDiv({ cls: "button-container" });
         new ButtonComponent(buttonContainer)
-            .setButtonText("Process")
+            .setButtonText("处理")
             .setCta()
             .onClick(async () => { // Use async here
                 this.close();
@@ -508,7 +508,7 @@ export class ProcessFolderModal extends Modal {
     // --- Helper Methods for Settings ---
 
     private updateResizeInputVisibility(resizeMode: string): void {
-        if (resizeMode === "None") {
+        if (resizeMode === "无") {
             this.resizeInputsDiv?.empty();
             this.enlargeReduceDiv?.hide(); // Explicitly hide it
             this.resizeInputSettings = null;
@@ -534,10 +534,10 @@ export class ProcessFolderModal extends Modal {
 
         this.enlargeReduceSettings = new Setting(this.enlargeReduceDiv)
             .setClass("enlarge-reduce-setting")
-            .setName("Enlarge or reduce ⓘ")
+            .setName("放大或缩小 ⓘ")
             .setDesc(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                "Reduce and enlarge: Adjusts all images. Reduce only: Shrinks larger images. Enlarge only: Enlarges smaller images."
+                "缩小并放大：调整所有图片。仅缩小：只缩小较大图片。仅放大：只放大较小图片。"
             )
             .setTooltip(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
@@ -546,9 +546,9 @@ export class ProcessFolderModal extends Modal {
             .addDropdown((dropdown) => {
                 dropdown
                     .addOptions({
-                        Always: "Reduce and enlarge",
-                        Reduce: "Reduce only",
-                        Enlarge: "Enlarge only",
+                        Always: "缩小并放大",
+                        Reduce: "仅缩小",
+                        Enlarge: "仅放大",
                     })
                     .setValue(
                         this.plugin.settings.ProcessCurrentNoteEnlargeOrReduce
@@ -584,14 +584,14 @@ export class ProcessFolderModal extends Modal {
         let desc = "";
 
         if (["Fit", "Fill"].includes(resizeMode)) {
-            name = "Resize dimensions";
-            desc = "Enter the desired width and height in pixels";
+            name = "缩放尺寸";
+            desc = "输入期望的宽度和高度（像素）";
             this.resizeInputSettings
                 .setName(name)
                 .setDesc(desc)
                 .addText((text: TextComponent) =>
                     text
-                        .setPlaceholder("Width")
+                        .setPlaceholder("宽度")
                         .setValue(
                             this.plugin.settings
                                 .ProcessCurrentNoteresizeModaldesiredWidth
@@ -608,7 +608,7 @@ export class ProcessFolderModal extends Modal {
                 )
                 .addText((text: TextComponent) =>
                     text
-                        .setPlaceholder("Height")
+                        .setPlaceholder("高度")
                         .setValue(
                             this.plugin.settings
                                 .ProcessCurrentNoteresizeModaldesiredHeight
@@ -625,18 +625,18 @@ export class ProcessFolderModal extends Modal {
                 );
         } else {
             switch (resizeMode) {
-                case "LongestEdge":
-                case "ShortestEdge":
+                case "最长边":
+                case "最短边":
                     name = `${resizeMode}`;
-                    desc = "Enter the desired length in pixels";
+                    desc = "输入期望的长度（像素）";
                     break;
-                case "Width":
-                    name = "Width";
-                    desc = "Enter the desired width in pixels";
+                case "宽度":
+                    name = "宽度";
+                    desc = "输入期望的宽度（像素）";
                     break;
-                case "Height":
-                    name = "Height";
-                    desc = "Enter the desired height in pixels";
+                case "高度":
+                    name = "高度";
+                    desc = "输入期望的高度（像素）";
                     break;
             }
 
@@ -662,14 +662,14 @@ export class ProcessFolderModal extends Modal {
 
     private getInitialValue(resizeMode: string): number {
         switch (resizeMode) {
-            case "LongestEdge":
-            case "ShortestEdge":
+            case "最长边":
+            case "最短边":
                 return this.plugin.settings
                     .ProcessCurrentNoteresizeModaldesiredLength;
-            case "Width":
+            case "宽度":
                 return this.plugin.settings
                     .ProcessCurrentNoteresizeModaldesiredWidth;
-            case "Height":
+            case "高度":
                 return this.plugin.settings
                     .ProcessCurrentNoteresizeModaldesiredHeight;
             default:
@@ -682,16 +682,16 @@ export class ProcessFolderModal extends Modal {
         value: number
     ): Promise<void> {
         switch (resizeMode) {
-            case "LongestEdge":
-            case "ShortestEdge":
+            case "最长边":
+            case "最短边":
                 this.plugin.settings.ProcessCurrentNoteresizeModaldesiredLength =
                     value;
                 break;
-            case "Width":
+            case "宽度":
                 this.plugin.settings.ProcessCurrentNoteresizeModaldesiredWidth =
                     value;
                 break;
-            case "Height":
+            case "高度":
                 this.plugin.settings.ProcessCurrentNoteresizeModaldesiredHeight =
                     value;
                 break;
@@ -714,7 +714,7 @@ export class ProcessFolderModal extends Modal {
         const folder = this.app.vault.getAbstractFileByPath(this.folderPath);
         if (!(folder instanceof TFolder)) {
             // eslint-disable-next-line obsidianmd/ui/sentence-case
-            new Notice("Error: Invalid folder path.");
+            new Notice("错误：无效的文件夹路径。");
             return { total: 0, processed: 0, skipped: 0 };
         }
 

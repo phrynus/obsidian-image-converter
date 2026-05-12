@@ -819,7 +819,7 @@ if (format === 'ORIGINAL') {
                 const pngquantQuality = this.preset?.pngquantQuality || this.settings.pngquantQuality;
                 // Check if executable path is set
                 if (!pngquantExecutablePath) {
-                    new Notice("The pngquant executable path is not set. Please configure it in the plugin settings.");
+                    new Notice("pngquant 可执行文件路径未设置。请在插件设置中进行配置。");
                     return file.arrayBuffer(); // Return original
                 }
 
@@ -843,7 +843,7 @@ if (format === 'ORIGINAL') {
                 // Check if executable path is set
                 if (!ffmpegExecutablePath) {
                     // eslint-disable-next-line obsidianmd/ui/sentence-case -- FFmpeg is the official brand name
-                    new Notice("FFmpeg executable path is not set. Please configure it in the plugin settings.");
+                    new Notice("FFmpeg 可执行文件路径未设置。请在插件设置中进行配置。");
                     return file.arrayBuffer();  // Return original
                 }
 
@@ -1057,7 +1057,7 @@ if (format === 'ORIGINAL') {
                             // Try to find a software fallback
                             const softwareFallback = await this.detectSoftwareEncoder(normalizedExecutablePath);
                             if (softwareFallback) {
-                                new Notice(`Hardware encoder unavailable. Falling back to ${softwareFallback}...`);
+                                new Notice(`硬件编码器不可用，正在回退到 ${softwareFallback}...`);
                                 // Invalidate cache and retry with software encoder
                                 ImageProcessor.encoderDetectionCache.delete(normalizedExecutablePath);
                                 ImageProcessor.encoderDetectionCache.set(normalizedExecutablePath, softwareFallback);

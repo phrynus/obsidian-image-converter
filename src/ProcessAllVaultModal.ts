@@ -71,10 +71,10 @@ export class ProcessAllVaultModal extends Modal {
     private createHeader(contentEl: HTMLElement) {
         const headerContainer = contentEl.createDiv({ cls: "modal-header" });
         headerContainer.createEl("h2", {
-            text: "Convert, compress and resize all images",
+            text: "转换、压缩和缩放所有图片",
         });
         headerContainer.createEl("h6", {
-            text: "In the vault",
+            text: "在整个仓库中",
             cls: "modal-subtitle",
         });
     }
@@ -83,22 +83,22 @@ export class ProcessAllVaultModal extends Modal {
         contentEl.createEl("p", {
             cls: "modal-warning",
             // eslint-disable-next-line obsidianmd/ui/sentence-case -- Warning icon improves visibility
-            text: "⚠️ This will modify all images in the vault. Please ensure you have backups.",
+            text: "⚠️ 这将修改仓库中的所有图片，请确保已备份。",
         });
     }
 
     private createGeneralSettings(contentEl: HTMLElement) {
         new Setting(contentEl)
-            .setName("Convert to ⓘ")
+            .setName("转换为 ⓘ")
             .setDesc(
-                "Choose output format. Same as original applies compression/resizing to current format"
+                "选择输出格式。'保持原格式'将对当前格式应用压缩/缩放"
             )
             .setTooltip(
-                "Same as original: preserves current format while applying compression/resizing"
+                "保持原格式：保留当前格式，同时应用压缩/缩放"
             )
             .addDropdown((dropdown) => {
                 dropdown
-                    .addOption("disabled", "Same as original")
+                    .addOption("disabled", "保持原格式")
                     .addOptions({
                         webp: "WebP",
                         jpg: "JPG",
@@ -112,14 +112,14 @@ export class ProcessAllVaultModal extends Modal {
             });
 
         new Setting(contentEl)
-            .setName("Quality ⓘ")
-            .setDesc("Compression level (0-100)")
+            .setName("质量 ⓘ")
+            .setDesc("压缩级别 (0-100)")
             .setTooltip(
-                "100: no compression (original quality)\n75: recommended (good balance)\n0-50: high compression (lower quality)"
+                "100：无压缩（原始质量）\n75：推荐（良好平衡）\n0-50：高压缩（较低质量）"
             )
             .addText((text) => {
                 text
-                    .setPlaceholder("Enter quality (0-100)")
+                    .setPlaceholder("输入质量 (0-100)")
                     .setValue(
                         (
                             this.plugin.settings.ProcessAllVaultquality * 100
@@ -142,24 +142,24 @@ export class ProcessAllVaultModal extends Modal {
 
     private createResizeSettings(contentEl: HTMLElement) {
         new Setting(contentEl)
-            .setName("Resize mode ⓘ")
+            .setName("缩放模式 ⓘ")
             .setDesc(
-                "Choose how images should be resized. Note: results are permanent"
+                "选择图片的缩放方式。注意：结果不可逆"
             )
             .setTooltip(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case -- Structured tooltip format
-                "Fit: Maintains aspect ratio within dimensions\nFill: Exactly matches dimensions\nLongest edge: Limits the longest side\nShortest edge: Limits the shortest side\nWidth/Height: Constrains single dimension"
+                "适应：在尺寸范围内保持宽高比\n填充：精确匹配尺寸\n最长边：限制最长边\n最短边：限制最短边\n宽度/高度：约束单个维度"
             )
             .addDropdown((dropdown) => {
                 dropdown
                     .addOptions({
-                        None: "None",
-                        Fit: "Fit",
-                        Fill: "Fill",
-                        LongestEdge: "Longest edge",
-                        ShortestEdge: "Shortest edge",
-                        Width: "Width",
-                        Height: "Height",
+                        None: "无",
+                        Fit: "适应",
+                        Fill: "填充",
+                        LongestEdge: "最长边",
+                        ShortestEdge: "最短边",
+                        Width: "宽度",
+                        Height: "高度",
                     })
                     .setValue(
                         this.plugin.settings
@@ -185,18 +185,18 @@ export class ProcessAllVaultModal extends Modal {
 
     private createSkipSettings(contentEl: HTMLElement) {
         new Setting(contentEl)
-            .setName("Skip formats ⓘ")
+            .setName("跳过格式 ⓘ")
             .setDesc(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case -- Example format aids clarity
-                "Comma-separated list (no dots or spaces). Example: png,gif"
+                "逗号分隔列表（不含点号或空格）。例如：png,gif"
             )
             .setTooltip(
-                "Comma-separated list of file formats to skip (e.g., tif,tiff,heic). Leave empty to process all formats."
+                "要跳过的文件格式，逗号分隔列表（例如：tif,tiff,heic）。留空则处理所有格式。"
             )
             .addText((text) => {
                 text.setPlaceholder(
                     // eslint-disable-next-line obsidianmd/ui/sentence-case -- Example format
-                    "Example: png,gif"
+                    "例如：png,gif"
                 )
                     .setValue(this.plugin.settings.ProcessAllVaultSkipFormats)
                     .onChange(async (value) => {
@@ -206,12 +206,12 @@ export class ProcessAllVaultModal extends Modal {
             });
 
         new Setting(contentEl)
-            .setName("Skip images in target format ⓘ")
+            .setName("跳过目标格式图片 ⓘ")
             .setDesc(
-                "Skip compression/resizing if image is already in target format."
+                "如果图片已是目标格式，则跳过压缩/缩放。"
             )
             .setTooltip(
-                "If image is already in target format, this allows you to skip its compression, conversion and resizing. Processing of all other formats will be still performed."
+                "如果图片已是目标格式，可跳过其压缩、转换和缩放。其他格式的图片仍会被处理。"
             )
             .addToggle((toggle) => {
                 toggle
@@ -231,7 +231,7 @@ export class ProcessAllVaultModal extends Modal {
             cls: "button-container",
         });
         new ButtonComponent(buttonContainer)
-            .setButtonText("Process all images")
+            .setButtonText("处理所有图片")
             .setCta()
             .onClick(async () => {
                 this.close();
@@ -268,20 +268,20 @@ export class ProcessAllVaultModal extends Modal {
 
         this.enlargeReduceSettings = new Setting(this.enlargeReduceDiv)
             .setClass("enlarge-reduce-setting")
-            .setName("Enlarge or reduce ⓘ")
+            .setName("放大或缩小 ⓘ")
             .setDesc(
-                "Reduce and enlarge: adjusts all images. Reduce only: shrinks larger images. Enlarge only: enlarges smaller images"
+                "缩小并放大：调整所有图片。仅缩小：只缩小较大图片。仅放大：只放大较小图片"
             )
             .setTooltip(
                 // eslint-disable-next-line obsidianmd/ui/sentence-case -- Bullet list format
-                "• Reduce and enlarge: Adjusts all images to fit specified dimensions\n• Reduce only: Only shrinks images larger than target\n• Enlarge only: Only enlarges images smaller than target"
+                "• 缩小并放大：调整所有图片以匹配指定尺寸\n• 仅缩小：仅缩小大于目标尺寸的图片\n• 仅放大：仅放大小于目标尺寸的图片"
             )
             .addDropdown((dropdown) => {
                 dropdown
                     .addOptions({
-                        Always: "Reduce and enlarge",
-                        Reduce: "Reduce only",
-                        Enlarge: "Enlarge only",
+                        Always: "缩小并放大",
+                        Reduce: "仅缩小",
+                        Enlarge: "仅放大",
                     })
                     .setValue(
                         this.plugin.settings.ProcessAllVaultEnlargeOrReduce
@@ -317,14 +317,14 @@ export class ProcessAllVaultModal extends Modal {
         let desc = "";
 
         if (["Fit", "Fill"].includes(resizeMode)) {
-            name = "Resize dimensions";
-            desc = "Enter the desired width and height in pixels";
+            name = "缩放尺寸";
+            desc = "输入期望的宽度和高度（像素）";
             this.resizeInputSettings
                 .setName(name)
                 .setDesc(desc)
                 .addText((text) =>
                     text
-                        .setPlaceholder("Width")
+                        .setPlaceholder("宽度")
                         .setValue(
                             this.plugin.settings
                                 .ProcessAllVaultResizeModaldesiredWidth
@@ -341,7 +341,7 @@ export class ProcessAllVaultModal extends Modal {
                 )
                 .addText((text) =>
                     text
-                        .setPlaceholder("Height")
+                        .setPlaceholder("高度")
                         .setValue(
                             this.plugin.settings
                                 .ProcessAllVaultResizeModaldesiredHeight
@@ -361,15 +361,15 @@ export class ProcessAllVaultModal extends Modal {
                 case "LongestEdge":
                 case "ShortestEdge":
                     name = `${resizeMode}`;
-                    desc = "Enter the desired length in pixels";
+                    desc = "输入期望的长度（像素）";
                     break;
                 case "Width":
-                    name = "Width";
-                    desc = "Enter the desired width in pixels";
+                    name = "宽度";
+                    desc = "输入期望的宽度（像素）";
                     break;
                 case "Height":
-                    name = "Height";
-                    desc = "Enter the desired height in pixels";
+                    name = "高度";
+                    desc = "输入期望的高度（像素）";
                     break;
             }
 

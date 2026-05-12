@@ -153,7 +153,7 @@ export default class ImageConverterPlugin extends Plugin {
             this.initializeComponents().catch((err) => {
                 console.error('Failed to initialize components:', err);
                 //eslint-disable-next-line
-                new Notice('Image Converter: Failed to initialize. Check console for details.');
+                new Notice('图片转换器：初始化失败，请查看控制台了解详情。');
             });
 
             // Apply Image Alignment and Resizing when switching Live to Reading mode etc.
@@ -255,7 +255,7 @@ export default class ImageConverterPlugin extends Plugin {
             this.app.workspace.on("file-menu", (menu, file) => {
                 if (file instanceof TFile && this.supportedImageFormats.isSupported(undefined, file.name)) {
                     menu.addItem((item) => {
-                        item.setTitle("Process image")
+                        item.setTitle("处理图片")
                             .setIcon("cog")
                             .onClick(() => {
                                 new ProcessSingleImageModal(this.app, this, file).open();
@@ -264,7 +264,7 @@ export default class ImageConverterPlugin extends Plugin {
                 } else if (file instanceof TFolder) {
                     menu.addItem((item) => {
                         // eslint-disable-next-line obsidianmd/ui/sentence-case
-                        item.setTitle("Process all images in Folder")
+                        item.setTitle("处理文件夹中所有图片")
                             .setIcon("cog")
                             .onClick(() => {
                                 new ProcessFolderModal(this.app, this, file.path, this.batchImageProcessor).open();
@@ -272,7 +272,7 @@ export default class ImageConverterPlugin extends Plugin {
                     });
                 } else if (file instanceof TFile && (file.extension === 'md' || file.extension === 'canvas')) {
                     menu.addItem((item) => {
-                        item.setTitle(`Process all images in ${file.extension === 'md' ? 'note' : 'canvas'}`)
+                        item.setTitle(`处理${file.extension === 'md' ? '笔记' : '画布'}中所有图片`)
                             .setIcon("cog")
                             .onClick(() => {
                                 new ProcessCurrentNote(this.app, this, file, this.batchImageProcessor).open();
@@ -285,7 +285,7 @@ export default class ImageConverterPlugin extends Plugin {
         // Register commands
         this.addCommand({
             id: 'process-all-vault-images',
-            name: 'Process all vault images',
+            name: '处理仓库中所有图片',
             callback: () => {
                 new ProcessAllVaultModal(this.app, this, this.batchImageProcessor).open();
             }
@@ -293,13 +293,13 @@ export default class ImageConverterPlugin extends Plugin {
 
         this.addCommand({
             id: 'process-all-images-current-note',
-            name: 'Process all images in current note',
+            name: '处理当前笔记中所有图片',
             callback: () => {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (activeFile) {
                     new ProcessCurrentNote(this.app, this, activeFile, this.batchImageProcessor).open();
                 } else {
-                    new Notice('No active file detected');
+                    new Notice('未检测到活动文件');
                 }
             }
         });
@@ -308,7 +308,7 @@ export default class ImageConverterPlugin extends Plugin {
             // eslint-disable-next-line obsidianmd/commands/no-plugin-id-in-command-id -- not to break bindings
             id: 'open-image-converter-settings',
             // eslint-disable-next-line obsidianmd/commands/no-plugin-name-in-command-name, obsidianmd/ui/sentence-case -- not to break bindings
-            name: 'Open Image Converter Settings',
+            name: '打开图片转换器设置',
             callback: () => this.commandOpenSettingsTab()
         });
 
@@ -399,7 +399,7 @@ export default class ImageConverterPlugin extends Plugin {
             await setting.open();
             setting.openTabById(this.manifest.id);
         } else {
-            new Notice('Unable to open settings. Please check if the settings plugin is enabled.');
+            new Notice('无法打开设置，请检查设置插件是否已启用。');
         }
     }
 
@@ -407,10 +407,10 @@ export default class ImageConverterPlugin extends Plugin {
 
         this.addCommand({
             id: 'reload-plugin',
-            name: 'Reload plugin',
+            name: '重新加载插件',
             callback: async () => {
                 // eslint-disable-next-line obsidianmd/ui/sentence-case
-                new Notice('Reloading Image Converter...');
+                new Notice('正在重新加载图片转换器...');
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access -- Obsidian internal API
                 const plugins = (this.app as any).plugins as { disablePlugin: (id: string) => Promise<void>; enablePlugin: (id: string) => Promise<void> } | undefined;
 
@@ -420,7 +420,7 @@ export default class ImageConverterPlugin extends Plugin {
                         await plugins.disablePlugin(this.manifest.id);
                     } else {
                         console.error("Plugins API is not accessible.");
-                        new Notice('Failed to reload: plugins API unavailable');
+                        new Notice('重新加载失败：插件 API 不可用');
                         return;
                     }
 
@@ -432,15 +432,15 @@ export default class ImageConverterPlugin extends Plugin {
                         await plugins.enablePlugin(this.manifest.id);
                     } else {
                         console.error("Plugins API is not accessible.");
-                        new Notice('Failed to reload: plugins API unavailable');
+                        new Notice('重新加载失败：插件 API 不可用');
                         return;
                     }
 
                     // eslint-disable-next-line obsidianmd/ui/sentence-case
-                    new Notice('Image Converter reloaded!');
+                    new Notice('图片转换器已重新加载！');
                 } catch (error) {
                     console.error("Error reloading plugin:", error);
-                    new Notice('Failed to reload plugin, see console');
+                    new Notice('重新加载插件失败，请查看控制台');
                 }
             },
         });
@@ -537,7 +537,7 @@ export default class ImageConverterPlugin extends Plugin {
 
         const activeFile = this.app.workspace.getActiveFile();
         if (!activeFile) {
-            new Notice('No active file detected');
+            new Notice('未检测到活动文件');
             return;
         }
 
@@ -554,8 +554,8 @@ export default class ImageConverterPlugin extends Plugin {
                     showModal = await new Promise<boolean>((resolve) => {
                         new ConfirmDialog(
                             this.app,
-                            "Show Preset Selection Modal?",
-                            "Do you want to select presets for this image?",
+                            "显示预设选择弹窗？",
+                            "是否为此图片选择预设？",
                             "Yes",
                             () => resolve(true)
                         ).open();
@@ -648,7 +648,7 @@ export default class ImageConverterPlugin extends Plugin {
                 } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     console.error("Error determining destination and filename:", errorMessage);
-                    new Notice(`Failed to determine destination or filename for "${file.name}". Check console for details.`);
+                    new Notice(`无法确定"${file.name}"的目标位置或文件名，请查看控制台了解详情。`);
                     return; // Resolve this promise (no further processing for this file)
                 }
 
@@ -664,7 +664,7 @@ export default class ImageConverterPlugin extends Plugin {
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     if (!errorMessage.startsWith('Folder already exists')) {
                         console.error("Error creating folder:", errorMessage);
-                        new Notice(`Failed to create folder "${destinationPath}". Check console for details.`);
+                        new Notice(`创建文件夹"${destinationPath}"失败，请查看控制台了解详情。`);
                         return; // Resolve this promise
                     }
                 }
@@ -678,7 +678,7 @@ export default class ImageConverterPlugin extends Plugin {
 
                 if (selectedFilenamePreset && this.folderAndFilenameManagement.shouldSkipRename(file.name, selectedFilenamePreset)) {
                     new Notice(
-                        `Skipped renaming/conversion of image "${file.name}" due to skip pattern match.`
+                        `因匹配跳过规则，已跳过图片"${file.name}"的重命名/转换。`
                     );
                     skipFurtherProcessing = true;
                 } else if (selectedFilenamePreset && selectedFilenamePreset.conflictResolution === "increment") {
@@ -694,7 +694,7 @@ export default class ImageConverterPlugin extends Plugin {
                     } catch (error) {
                         const errorMessage = error instanceof Error ? error.message : String(error);
                         console.error("Error handling filename conflicts:", errorMessage);
-                        new Notice(`Error incrementing filename for "${file.name}". Check console for details.`);
+                        new Notice(`递增"${file.name}"的文件名时出错，请查看控制台了解详情。`);
                         return; // Resolve this promise
                     }
                 }
@@ -712,7 +712,7 @@ export default class ImageConverterPlugin extends Plugin {
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : String(error);
                             console.error("Failed to insert link for reused file:", errorMessage);
-                            new Notice(`Failed to insert link for "${existingFile.name}". Check console for details.`);
+                            new Notice(`插入"${existingFile.name}"的链接失败，请查看控制台了解详情。`);
                         }
                         return; // Resolve this promise
                     }
@@ -722,7 +722,7 @@ export default class ImageConverterPlugin extends Plugin {
                     // - Check if the current file matches a skip pattern defined in the selected conversion preset.
                     // - If it matches, skip the image processing step entirely.
                     if (selectedConversionPreset && this.folderAndFilenameManagement.shouldSkipConversion(file.name, selectedConversionPreset)) {
-                        new Notice(`Skipped conversion of image "${file.name}" due to skip pattern match in the conversion preset.`);
+                        new Notice(`因转换预设中的跳过规则匹配，已跳过图片"${file.name}"的转换。`);
 
 
                         // Save the original file directly to the vault without any processing.
@@ -737,7 +737,7 @@ export default class ImageConverterPlugin extends Plugin {
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : String(error);
                             console.error("Failed to insert link for skipped conversion:", errorMessage);
-                            new Notice(`Failed to insert link for "${file.name}". Check console for details.`);
+                            new Notice(`插入"${file.name}"的链接失败，请查看控制台了解详情。`);
                         }
 
                     } else {
@@ -795,7 +795,7 @@ export default class ImageConverterPlugin extends Plugin {
                             if (shouldRevertIfLarger && this.processedImage.byteLength + (minSavingsKB * 1024) > originalSize) {
                                 // User wants to revert AND processed image is larger
                                 this.showSizeComparisonNotification(originalSize, this.processedImage.byteLength);
-                                new Notice(`Using original image for "${file.name}" because size reduction was less than ${minSavingsKB} KB.`);
+                                new Notice(`对"${file.name}"使用原始图片，因为大小缩减小于 ${minSavingsKB} KB。`);
 
                                 const fileBuffer = await file.arrayBuffer();
                                 tfile = await this.app.vault.createBinary(newFullPath, fileBuffer);
@@ -812,7 +812,7 @@ export default class ImageConverterPlugin extends Plugin {
                             } catch (error) {
                                 const errorMessage = error instanceof Error ? error.message : String(error);
                                 console.error("Failed to insert link after processing:", errorMessage);
-                                new Notice(`Failed to insert link for "${file.name}". Check console for details.`);
+                                new Notice(`插入"${file.name}"的链接失败，请查看控制台了解详情。`);
                             }
                         } catch (error) {
                             // Step 3.5.6: Handle Image Processing Errors
@@ -821,14 +821,14 @@ export default class ImageConverterPlugin extends Plugin {
                             console.error("Image processing failed:", errorMessage);
                             if (error instanceof Error) {
                                 if (error.message.includes("File already exists")) {
-                                    new Notice(`Failed to process image: File "${newFilename}" already exists.`);
+                                    new Notice(`处理图片失败：文件"${newFilename}"已存在。`);
                                 } else if (error.message.includes("Invalid input file type")) {
-                                    new Notice(`Failed to process image: Invalid input file type for "${file.name}".`);
+                                    new Notice(`处理图片失败："${file.name}"的输入文件类型无效。`);
                                 } else {
-                                    new Notice(`Failed to process image "${file.name}": ${error.message}. Check console for details.`);
+                                    new Notice(`处理图片"${file.name}"失败：${error.message}，请查看控制台了解详情。`);
                                 }
                             } else {
-                                new Notice(`Failed to process image "${file.name}". Check console for details.`);
+                                new Notice(`处理图片"${file.name}"失败，请查看控制台了解详情。`);
                             }
                             return; // Resolve this promise
                         } finally {
@@ -845,7 +845,7 @@ export default class ImageConverterPlugin extends Plugin {
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : String(error);
                             console.error("Failed to insert link for skipped processing:", errorMessage);
-                            new Notice(`Failed to insert link for "${existingFile.name}". Check console for details.`);
+                            new Notice(`插入"${existingFile.name}"的链接失败，请查看控制台了解详情。`);
                         }
                     }
                 }
@@ -854,7 +854,7 @@ export default class ImageConverterPlugin extends Plugin {
                 // - Catch and display any other unexpected errors that might occur.
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.error("An unexpected error occurred:", errorMessage);
-                new Notice('An unexpected error occurred. Check console for details.');
+                new Notice('发生未知错误，请查看控制台了解详情。');
             }
         });
 
@@ -882,7 +882,7 @@ export default class ImageConverterPlugin extends Plugin {
 
         const activeFile = this.app.workspace.getActiveFile();
         if (!activeFile) {
-            new Notice('No active file detected');
+            new Notice('未检测到活动文件');
             return;
         }
 
@@ -897,8 +897,8 @@ export default class ImageConverterPlugin extends Plugin {
                 showModal = await new Promise<boolean>((resolve) => {
                     new ConfirmDialog(
                         this.app,
-                        "Show Preset Selection Modal?",
-                        "Do you want to select presets for this image?",
+                        "显示预设选择弹窗？",
+                        "是否为此图片选择预设？",
                         "Yes",
                         () => resolve(true)
                     ).open();
@@ -991,7 +991,7 @@ export default class ImageConverterPlugin extends Plugin {
                 } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     console.error("Error determining destination and filename:", errorMessage);
-                    new Notice(`Failed to determine destination or filename for "${file.name}". Check console for details.`);
+                    new Notice(`无法确定"${file.name}"的目标位置或文件名，请查看控制台了解详情。`);
                     return; // Resolve this promise
                 }
 
@@ -1003,7 +1003,7 @@ export default class ImageConverterPlugin extends Plugin {
                     const errorMessage = error instanceof Error ? error.message : String(error);
                     if (!errorMessage.startsWith('Folder already exists')) {
                         console.error("Error creating folder:", errorMessage);
-                        new Notice(`Failed to create folder "${destinationPath}". Check console for details.`);
+                        new Notice(`创建文件夹"${destinationPath}"失败，请查看控制台了解详情。`);
                         return; // Resolve this promise
                     }
                 }
@@ -1022,7 +1022,7 @@ export default class ImageConverterPlugin extends Plugin {
                     )
                 ) {
                     new Notice(
-                        `Skipped renaming/conversion of image "${file.name}" due to skip pattern match.`
+                        `因匹配跳过规则，已跳过图片"${file.name}"的重命名/转换。`
                     );
                     skipFurtherProcessing = true;
                 } else if (
@@ -1041,7 +1041,7 @@ export default class ImageConverterPlugin extends Plugin {
                     } catch (error) {
                         const errorMessage = error instanceof Error ? error.message : String(error);
                         console.error("Error handling filename conflicts:", errorMessage);
-                        new Notice(`Error incrementing filename for "${file.name}". Check console for details.`);
+                        new Notice(`递增"${file.name}"的文件名时出错，请查看控制台了解详情。`);
                         return; // Resolve this promise
                     }
                 }
@@ -1058,7 +1058,7 @@ export default class ImageConverterPlugin extends Plugin {
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : String(error);
                             console.error("Failed to insert link for reused file:", errorMessage);
-                            new Notice(`Failed to insert link for "${existingFile.name}". Check console for details.`);
+                            new Notice(`插入"${existingFile.name}"的链接失败，请查看控制台了解详情。`);
                         }
                         return;
                     }
@@ -1067,7 +1067,7 @@ export default class ImageConverterPlugin extends Plugin {
                     // - Check if the current file matches a skip pattern in the conversion preset.
                     // - If it matches, skip image processing entirely.
                     if (selectedConversionPreset && this.folderAndFilenameManagement.shouldSkipConversion(file.name, selectedConversionPreset)) {
-                        new Notice(`Skipped conversion of image "${file.name}" due to skip pattern match in the conversion preset.`);
+                        new Notice(`因转换预设中的跳过规则匹配，已跳过图片"${file.name}"的转换。`);
 
                         // Save the original file directly to the vault without any processing.
                         // const originalSize = file.size;
@@ -1081,7 +1081,7 @@ export default class ImageConverterPlugin extends Plugin {
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : String(error);
                             console.error("Failed to insert link for skipped conversion:", errorMessage);
-                            new Notice(`Failed to insert link for "${file.name}". Check console for details.`);
+                            new Notice(`插入"${file.name}"的链接失败，请查看控制台了解详情。`);
                         }
                     } else {
                         // Step 3.5.3: Process the Image (ONLY if not skipped)
@@ -1136,7 +1136,7 @@ export default class ImageConverterPlugin extends Plugin {
                             if (shouldRevertIfLarger && this.processedImage.byteLength + (minSavingsKB * 1024) > originalSize) {
                                 // User wants to revert AND processed image is larger
                                 this.showSizeComparisonNotification(originalSize, this.processedImage.byteLength);
-                                new Notice(`Using original image for "${file.name}" because size reduction was less than ${minSavingsKB} KB.`);
+                                new Notice(`对"${file.name}"使用原始图片，因为大小缩减小于 ${minSavingsKB} KB。`);
 
                                 const fileBuffer = await file.arrayBuffer();
                                 tfile = await this.app.vault.createBinary(newFullPath, fileBuffer);
@@ -1153,7 +1153,7 @@ export default class ImageConverterPlugin extends Plugin {
                             } catch (error) {
                                 const errorMessage = error instanceof Error ? error.message : String(error);
                                 console.error("Failed to insert link after processing:", errorMessage);
-                                new Notice(`Failed to insert link for "${file.name}". Check console for details.`);
+                                new Notice(`插入"${file.name}"的链接失败，请查看控制台了解详情。`);
                             }
                         } catch (error) {
                             // Step 3.5.6: Handle Image Processing Errors
@@ -1162,14 +1162,14 @@ export default class ImageConverterPlugin extends Plugin {
                             console.error("Image processing failed:", errorMessage);
                             if (error instanceof Error) {
                                 if (error.message.includes("File already exists")) {
-                                    new Notice(`Failed to process image: File "${newFilename}" already exists.`);
+                                    new Notice(`处理图片失败：文件"${newFilename}"已存在。`);
                                 } else if (error.message.includes("Invalid input file type")) {
-                                    new Notice(`Failed to process image: Invalid input file type for "${file.name}".`);
+                                    new Notice(`处理图片失败："${file.name}"的输入文件类型无效。`);
                                 } else {
-                                    new Notice(`Failed to process image "${file.name}": ${error.message}. Check console for details.`);
+                                    new Notice(`处理图片"${file.name}"失败：${error.message}，请查看控制台了解详情。`);
                                 }
                             } else {
-                                new Notice(`Failed to process image "${file.name}". Check console for details.`);
+                                new Notice(`处理图片"${file.name}"失败，请查看控制台了解详情。`);
                             }
                             return; // Resolve this promise
                         }
@@ -1183,7 +1183,7 @@ export default class ImageConverterPlugin extends Plugin {
                         } catch (error) {
                             const errorMessage = error instanceof Error ? error.message : String(error);
                             console.error("Failed to insert link for skipped processing:", errorMessage);
-                            new Notice(`Failed to insert link for "${existingFile.name}". Check console for details.`);
+                            new Notice(`插入"${existingFile.name}"的链接失败，请查看控制台了解详情。`);
                         }
                     }
                 }
@@ -1191,7 +1191,7 @@ export default class ImageConverterPlugin extends Plugin {
                 // Step 3.7: Handle Unexpected Errors
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 console.error("An unexpected error occurred:", errorMessage);
-                new Notice('An unexpected error occurred. Check console for details.');
+                new Notice('发生未知错误，请查看控制台了解详情。');
             } finally {
                 // Clear memory after processing
                 this.clearMemory();
@@ -1253,7 +1253,7 @@ export default class ImageConverterPlugin extends Plugin {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('Failed to insert image link:', errorMessage);
-            new Notice('Failed to insert image link. Check console for details.');
+            new Notice('插入图片链接失败，请查看控制台了解详情。');
             return;
         }
 
